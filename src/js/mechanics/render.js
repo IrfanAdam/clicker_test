@@ -7,7 +7,15 @@ export function drawRound(c,x,y,w,h,r){ c.beginPath();c.moveTo(x+r,y);c.arcTo(x+
 
 // Supabase-style: groups are elevated table cards, nodes are list rows inside
 const EDGE_STYLES={ call:{color:'--stone-500',dash:[],w:1.25,head:'tri'}, read:{color:'--violet-600',dash:[],w:1.2,head:'chevron'}, write:{color:'--orange-600',dash:[],w:1.7,head:'triTick'}, event:{color:'--amber-600',dash:[7,5],w:1.25,head:'diamond'}, bind:{color:'--blue-600',dash:[2.5,5],w:1.25,head:'circleTri'}, flow:{color:'--blue-600',dash:[],w:1.6,head:'double'} };
-function drawHead(ctx,head,s,scale,color){ ctx.fillStyle=color; ctx.strokeStyle=color; if(head==='tri'){ ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-9/s,-4/s);ctx.lineTo(-9/s,4/s);ctx.closePath();ctx.fill(); } else if(head==='chevron'){ ctx.lineWidth=1.7/s; ctx.beginPath();ctx.moveTo(-7/s,-4.5/s);ctx.lineTo(0,0);ctx.lineTo(-7/s,4.5/s);ctx.stroke(); } else if(head==='triTick'){ ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-9/s,-4/s);ctx.lineTo(-9/s,4/s);ctx.closePath();ctx.fill(); ctx.lineWidth=1.2/s; ctx.beginPath();ctx.moveTo(-4.5/s,-3.2/s);ctx.lineTo(-4.5/s,3.2/s);ctx.stroke(); } else if(head==='diamond'){ ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-5/s,-4/s);ctx.lineTo(-10/s,0);ctx.lineTo(-5/s,4/s);ctx.closePath();ctx.fill(); } else if(head==='circleTri'){ ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-9/s,-4/s);ctx.lineTo(-9/s,4/s);ctx.closePath();ctx.fill(); ctx.beginPath();ctx.arc(-6/s,0,2.6/s,0,Math.PI*2);ctx.fillStyle=token('--color-card');ctx.fill(); ctx.strokeStyle=color;ctx.lineWidth=1.2/s;ctx.stroke(); } else if(head==='double'){ ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-7/s,-3.5/s);ctx.lineTo(-7/s,3.5/s);ctx.closePath();ctx.fill(); ctx.beginPath();ctx.moveTo(-7/s,0);ctx.lineTo(-14/s,-3.5/s);ctx.lineTo(-14/s,3.5/s);ctx.closePath();ctx.fill(); } }
+function drawHead(ctx,head,s,color){ const sc=s; // smaller arrows + white halo for idle visibility
+  function halo(path){ ctx.save(); ctx.fillStyle=token('--color-card'); ctx.strokeStyle=token('--color-card'); ctx.lineWidth=2.2/sc; ctx.lineJoin='round'; ctx.lineCap='round'; path(true); ctx.fill(); ctx.stroke(); ctx.restore(); }
+  if(head==='tri'){ halo(d=>{ctx.beginPath();ctx.moveTo(0.7,0);ctx.lineTo(-6.2/sc,-2.9/sc);ctx.lineTo(-6.2/sc,2.9/sc);ctx.closePath();}); ctx.fillStyle=color; ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-5.5/sc,-2.5/sc);ctx.lineTo(-5.5/sc,2.5/sc);ctx.closePath();ctx.fill(); }
+  else if(head==='chevron'){ ctx.strokeStyle=color; ctx.lineWidth=1.4/sc; ctx.beginPath();ctx.moveTo(-4.8/sc,-2.9/sc);ctx.lineTo(0,0);ctx.lineTo(-4.8/sc,2.9/sc);ctx.stroke(); halo(d=>{ if(d) return; }); }
+  else if(head==='triTick'){ halo(d=>{ctx.beginPath();ctx.moveTo(0.7,0);ctx.lineTo(-6.2/sc,-2.9/sc);ctx.lineTo(-6.2/sc,2.9/sc);ctx.closePath();}); ctx.fillStyle=color; ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-5.5/sc,-2.5/sc);ctx.lineTo(-5.5/sc,2.5/sc);ctx.closePath();ctx.fill(); ctx.strokeStyle=color; ctx.lineWidth=1/sc; ctx.beginPath();ctx.moveTo(-2.8/sc,-2/sc);ctx.lineTo(-2.8/sc,2/sc);ctx.stroke(); }
+  else if(head==='diamond'){ halo(d=>{ctx.beginPath();ctx.moveTo(0.7,0);ctx.lineTo(-3.2/sc,-2.9/sc);ctx.lineTo(-6.4/sc,0);ctx.lineTo(-3.2/sc,2.9/sc);ctx.closePath();}); ctx.fillStyle=color; ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-2.8/sc,-2.5/sc);ctx.lineTo(-5.6/sc,0);ctx.lineTo(-2.8/sc,2.5/sc);ctx.closePath();ctx.fill(); }
+  else if(head==='circleTri'){ halo(d=>{ctx.beginPath();ctx.moveTo(0.7,0);ctx.lineTo(-6.2/sc,-2.9/sc);ctx.lineTo(-6.2/sc,2.9/sc);ctx.closePath();}); ctx.fillStyle=color; ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-5.5/sc,-2.5/sc);ctx.lineTo(-5.5/sc,2.5/sc);ctx.closePath();ctx.fill(); ctx.beginPath();ctx.arc(-3.8/sc,0,1.7/sc,0,Math.PI*2);ctx.fillStyle=token('--color-card');ctx.fill(); ctx.strokeStyle=color;ctx.lineWidth=1/sc;ctx.stroke(); }
+  else if(head==='double'){ halo(d=>{ctx.beginPath();ctx.moveTo(0.7,0);ctx.lineTo(-4.5/sc,-2.4/sc);ctx.lineTo(-4.5/sc,2.4/sc);ctx.closePath(); ctx.moveTo(-4.5/sc,0);ctx.lineTo(-9/sc,-2.4/sc);ctx.lineTo(-9/sc,2.4/sc);ctx.closePath();}); ctx.fillStyle=color; ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-4/sc,-2/sc);ctx.lineTo(-4/sc,2/sc);ctx.closePath();ctx.fill(); ctx.beginPath();ctx.moveTo(-4/sc,0);ctx.lineTo(-8/sc,-2/sc);ctx.lineTo(-8/sc,2/sc);ctx.closePath();ctx.fill(); }
+}
 
 export function drawGroups(ctx,scale,hoverGroup,selected){
   const inc=new Set(); if(selected){ EDGES.forEach(e=>{ if(e.from===selected.id||e.to===selected.id){ inc.add(e.from); inc.add(e.to); }}); const sg=NODES.find(n=>n.id===selected.id)?.group; if(sg) inc.add(sg); }
@@ -91,13 +99,14 @@ export function drawEdges(ctx,scale,hover,selected){
     for(let i=1;i<path.length-1;i++) ctx.arcTo(path[i].x,path[i].y,path[i+1].x,path[i+1].y,rad);
     ctx.lineTo(r.bx,r.by); ctx.stroke(); ctx.restore();
     // main line — same geometry as halo, no fringe
+    const strokeCol = sel?token('--stone-900'): hov?token('--stone-700'):token(st.color);
     ctx.save(); ctx.globalAlpha=alpha; ctx.beginPath(); ctx.moveTo(path[0].x,path[0].y);
     for(let i=1;i<path.length-1;i++) ctx.arcTo(path[i].x,path[i].y,path[i+1].x,path[i+1].y,rad);
     ctx.lineTo(r.bx,r.by);
-    if(sel) ctx.strokeStyle=token('--stone-900'); else if(hov) ctx.strokeStyle=token('--stone-700'); else ctx.strokeStyle=token(st.color);
+    ctx.strokeStyle=strokeCol;
     ctx.lineWidth=lw; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.setLineDash(st.dash.length?st.dash.map(v=>v/scale):[]); ctx.stroke(); ctx.setLineDash([]); ctx.restore();
-    // arrow head
-    ctx.save(); ctx.globalAlpha=isDim? .25 : 1; ctx.translate(r.bx,r.by); ctx.rotate(ang); drawHead(ctx,st.head,scale, sel?token('--stone-900'): hov?token('--stone-700'):token(st.color)); ctx.restore();
+    // arrow head — never dimmed, always exact stroke color at full opacity
+    ctx.save(); ctx.globalAlpha=1; ctx.translate(r.bx,r.by); ctx.rotate(ang); drawHead(ctx,st.head,scale,strokeCol); ctx.restore();
     // Supabase port dot at source — small circle with white border for discernability
     const srcKind=NODES.find(n=>n.id===e.from)?.kind; const dotCol=kindColor(srcKind||'game');
     ctx.save(); ctx.globalAlpha=isDim? .24 : sel||hov ? 1 : .88;
