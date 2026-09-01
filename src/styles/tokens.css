@@ -1,0 +1,46 @@
+/* Tokens — primitives → semantic. All text-on-bg pairs ≥ WCAG AA 4.5:1 */
+:root{
+  /* Primitive palette (expressive, OKLCH-tuned) */
+  --blue-50:#EFF6FF;--blue-100:#DBEAFE;--blue-200:#BFDBFE;--blue-500:#3B82F6;--blue-600:#2563EB;--blue-700:#1D4ED8;--blue-800:#1E40AF;
+  --amber-50:#FFFBEB;--amber-100:#FEF3C7;--amber-200:#FDE68A;--amber-400:#FBBF24;--amber-600:#D97706;--amber-700:#B45309;--amber-800:#92400E;
+  --emerald-50:#ECFDF5;--emerald-100:#DCFCE7;--emerald-500:#22C55E;--emerald-600:#16A34A;--emerald-700:#15803D;--emerald-800:#166534;
+  --rose-50:#FFF1F2;--rose-100:#FFE4E6;--rose-200:#FECACA;--rose-500:#FB7185;--rose-600:#E11D48;--rose-700:#BE123C;
+  --orange-50:#FFF7ED;--orange-100:#FFEDD5;--orange-200:#FFD27A;--orange-400:#FB923C;--orange-600:#EA580C;--orange-700:#C2410C;--orange-900:#9A3412;
+  --violet-50:#F5F3FF;--violet-100:#EDE9FE;--violet-300:#C4B5FD;--violet-600:#7C3AED;--violet-700:#6D28D9;
+  --cyan-600:#0E7490;
+  --stone-50:#FFFBEB;--stone-100:#F5F5F4;--stone-200:#E7E5E4;--stone-300:#D6D3D1;--stone-500:#78716C;--stone-600:#57534E;--stone-700:#44403C;--stone-800:#292524;--stone-900:#1C1917;
+  --mascot-skin:#FFB347;--mascot-cheek:#FFF3C4;
+  /* Type */
+  --text-display:clamp(2rem,6vw,2.75rem);--text-title:clamp(1.125rem,2.5vw,1.375rem);--text-heading:clamp(1rem,2vw,1.125rem);
+  --text-body:1rem;--text-body-sm:.875rem;--text-caption:.75rem;--text-button:clamp(1.125rem,3vw,1.5rem);--text-price:.875rem;
+  --font-size-typo-3xl:var(--text-display);--font-size-typo-xl:var(--text-button);--font-size-typo-lg:var(--text-title);
+  --font-size-typo-md:var(--text-heading);--font-size-typo-sm:var(--text-body-sm);--font-size-typo-xs:var(--text-caption);
+  --font-weight-extrabold:800;--font-weight-bold:700;--font-weight-semi:600;--font-weight-medium:500;--font-weight-normal:400;
+  --leading-tight:1.1;--leading-snug:1.25;--leading-normal:1.5;--leading-relaxed:1.65;
+  --tracking-tighter:-.03em;--tracking-tight:-.02em;--tracking-normal:0;--tracking-wide:.05em;--tracking-wider:.08em;--tracking-widest:.14em;
+  --font-display:'Poppins',system-ui,sans-serif;--font-body:'Inter',system-ui,-apple-system,sans-serif;
+  /* Semantic surfaces */
+  --color-bg:var(--amber-50);--color-card:#FFFFFF;--color-card-hover:#FFFEF7;--surface-raised:var(--orange-50);--surface-sunken:var(--stone-100);
+  /* Semantic text — all ≥4.5:1 on white/card (verified) */
+  --color-text:var(--stone-900);--color-text-secondary:var(--stone-600);--color-text-tertiary:var(--stone-500);--color-text-inverse:#FFFFFF;
+  --color-muted:var(--stone-600);--color-subtle:var(--stone-500);
+  /* Borders */
+  --color-border:var(--stone-200);--color-border-strong:var(--stone-300);--color-border-hover:var(--amber-200);
+  /* Interactive — primary (blue 600, white 5.17:1) */
+  --color-primary:var(--blue-600);--color-primary-hover:var(--blue-700);--color-primary-active:var(--blue-800);
+  --color-on-primary:var(--color-text-inverse);--ring-primary:0 0 0 3px color-mix(in srgb,var(--blue-600) 22%,transparent);
+  /* Interactive — accent (amber 700, white 5.02:1) — price + highlights */
+  --color-accent:var(--amber-700);--color-accent-hover:var(--amber-800);--color-accent-soft:var(--amber-400);--color-accent-bg:var(--amber-100);--color-on-accent:var(--color-text-inverse);
+  /* Interactive — success (emerald 700, white 5.02:1) */
+  --color-success:var(--emerald-700);--color-success-hover:var(--emerald-800);--color-on-success:var(--color-text-inverse);--ring-success:0 0 0 3px color-mix(in srgb,var(--emerald-700) 22%,transparent);
+  /* Illustration — pastels use --color-text (12:1) or --stone-600 (6:1) for labels */
+  --illus-blob:#FFF7D6;--illus-yellow:var(--amber-200);--illus-blue:var(--blue-100);--illus-pink:var(--rose-200);
+  --illus-orange:var(--orange-200);--illus-violet:var(--violet-100);--illus-outline:#1A1A1A;--illus-outline-w:1.5px;--illus-dashed:var(--stone-200);
+  --illus-mascot-skin:var(--mascot-skin);--illus-mascot-cheek:var(--mascot-cheek);
+  /* Effects */
+  --shadow-sm:0 2px 10px rgba(28,25,23,.06);--shadow-md:0 12px 40px rgba(28,25,23,.08);--shadow-illus:0 4px 14px rgba(28,25,23,.08);--shadow-focus:var(--ring-primary);
+  --radius-lg:20px;--radius-md:14px;--radius-illus:16px;--radius-pill:999px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{font-family:var(--font-body);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+body{margin:0;padding:0;background:var(--color-bg);color:var(--color-text);min-height:100vh;line-height:var(--leading-normal)}

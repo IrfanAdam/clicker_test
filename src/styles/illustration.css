@@ -1,0 +1,21 @@
+/* Illustration primitives — sticker/flat style */
+.illus-card{position:relative;overflow:hidden;border:var(--illus-outline-w) solid var(--illus-outline);border-radius:var(--radius-illus);background:var(--color-card);box-shadow:var(--shadow-illus)}
+.illus-blob-bg{position:absolute;inset:auto -14% -22% auto;width:58%;height:74%;background:var(--illus-blob);border-radius:50% 40% 60% 50%/50% 60% 40% 50%;opacity:.78;pointer-events:none}
+.illus-icon{width:44px;height:44px;display:block;stroke:var(--illus-outline);stroke-width:1.5;vector-effect:non-scaling-stroke}
+.illus-dashed{border-left:1.5px dashed var(--illus-dashed)}
+/* Stat strip */
+.stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stat-card{padding:12px 48px 12px 14px;min-height:88px;display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;gap:4px;transition:border-color .2s,transform .2s}
+.stat-card .stat-label{font-size:.68rem;font-weight:var(--font-weight-semi);letter-spacing:var(--tracking-wider);text-transform:uppercase;color:var(--color-text-secondary);line-height:1.1}
+.stat-card .stat-value{font-family:var(--font-display);font-weight:var(--font-weight-extrabold);font-size:.92rem;line-height:var(--leading-tight);letter-spacing:var(--tracking-tight);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--color-text)}
+.stat-card .stat-icon-wrap{position:absolute;right:8px;bottom:6px;width:32px;height:32px;opacity:.92;pointer-events:none}
+
+/* Shop icon wrap */
+.shop-icon-wrap{position:relative;overflow:hidden;flex-shrink:0;width:48px;height:48px;border-radius:10px;border:var(--illus-outline-w) solid var(--illus-outline);display:grid;place-items:center;background:var(--illus-blob)}
+.shop-icon-wrap .illus-blob-sm{position:absolute;inset:auto -20% -20% auto;width:70%;height:70%;background:color-mix(in srgb,var(--color-card) 55%,transparent);border-radius:50%;pointer-events:none}
+/* Mascot + peekers */
+.mascot{flex-shrink:0;filter:drop-shadow(0 4px 10px color-mix(in srgb,var(--stone-900) 10%,transparent))}
+.mascot-bubble{display:flex;align-items:center;gap:10px;background:var(--illus-blob);border:var(--illus-outline-w) solid var(--illus-outline);border-radius:999px;padding:8px 14px;font-weight:600;font-size:var(--text-body-sm)}
+.peek{position:absolute;top:-10px;right:14px;width:56px;pointer-events:none;z-index:2}
+@media(max-width:768px){.peek{display:none}.stat-strip{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.stat-strip{gap:8px}.stat-card{min-height:84px;padding:12px}.illus-icon{width:32px;height:32px}}

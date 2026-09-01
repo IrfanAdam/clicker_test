@@ -1,0 +1,75 @@
+/* Game area — score, click button, particles */
+.game-area{
+  background:var(--color-card);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-md);
+  border:1px solid var(--color-border);
+  padding:32px 24px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  min-height:480px;
+  position:relative;
+  overflow:hidden;
+}
+#score-area{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  text-align:center;
+}
+#score-label{
+  margin:0;
+  font-family:var(--font-body);
+  font-size:var(--text-caption);
+  letter-spacing:var(--tracking-widest);
+  text-transform:uppercase;
+  font-weight:var(--font-weight-semi);
+  color:var(--color-muted);
+  line-height:var(--leading-normal);
+}
+#score-value{
+  font-family:var(--font-display);
+  font-size:var(--text-display);
+  font-weight:var(--font-weight-extrabold);
+  color:var(--color-accent);
+  line-height:var(--leading-tight);
+  letter-spacing:var(--tracking-tighter);
+  font-variant-numeric:tabular-nums;
+}
+#status-text{
+  margin:0;
+  font-family:var(--font-body);
+  font-size:var(--text-body-sm);
+  font-weight:var(--font-weight-normal);
+  color:var(--color-subtle);
+  line-height:var(--leading-relaxed);
+  min-height:1.4em;
+}
+#click-button{
+  font-family:var(--font-display);
+  font-size:var(--text-button);
+  font-weight:var(--font-weight-extrabold);
+  letter-spacing:var(--tracking-tight);
+  line-height:var(--leading-tight);
+  color:var(--color-text-inverse);
+  padding:18px 48px;
+  border-radius:var(--radius-pill);
+  border:var(--illus-outline-w) solid var(--illus-outline);
+  cursor:pointer;
+  background:var(--stone-900);
+  box-shadow:var(--shadow-illus);
+  transition:transform .18s,background .18s,box-shadow .18s;
+  width:clamp(200px,85%,340px);
+}
+#click-button:hover{transform:translateY(-2px);background:var(--stone-800);box-shadow:0 8px 20px color-mix(in srgb,var(--stone-900) 14%,transparent)}
+#click-button:active{transform:scale(.98);background:var(--stone-900);box-shadow:var(--shadow-sm)}
+#click-button:focus-visible{outline:none;box-shadow:var(--shadow-illus),0 0 0 3px color-mix(in srgb,var(--stone-900) 18%,transparent)}
+.confetti-piece,.click-particle{position:fixed;pointer-events:none;z-index:1000;font-weight:700}
+#particle-container{position:absolute;inset:0;pointer-events:none}
+@keyframes floatUp{0%{opacity:0;transform:translate(-50%,-30%) scale(.85)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}100%{opacity:0;transform:translate(-50%,-85%) scale(1)}}
+.float-particle{position:fixed;pointer-events:none;z-index:1000;font-family:var(--font-display);font-weight:800;user-select:none}
+.float-particle.burst{animation:floatUp .8s ease-out forwards}

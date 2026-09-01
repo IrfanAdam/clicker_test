@@ -1,0 +1,19 @@
+/* Responsive — breakpoints (layout only; typography is fluid via tokens) */
+@media (max-width:1024px){
+  .game-layout{grid-template-columns:1fr 320px}
+}
+@media (max-width:768px){
+  #app{padding:14px}
+  .app-header{padding:14px 18px}
+  .game-layout{grid-template-columns:1fr}
+  .shop-area{position:static;max-height:none}
+  .game-area{min-height:420px;padding:28px 18px}
+}
+@media (max-width:480px){
+  body{padding:0}
+  #app{padding:10px;gap:12px}
+  .app-header{flex-direction:column;text-align:center}
+  .app-header nav ul{gap:12px}
+  #click-button{padding:16px 24px;width:92%}
+  .shop-area{padding:16px}
+}

@@ -1,0 +1,41 @@
+/* Sound toggle — token-compliant */
+.app-header nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+#sound-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-text-secondary);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+#sound-toggle:hover {
+  border-color: var(--color-border-hover);
+  background: var(--surface-raised);
+  color: var(--color-text);
+}
+#sound-toggle:active {
+  transform: scale(0.94);
+}
+#sound-toggle[aria-pressed='true'] {
+  background: var(--blue-50);
+  color: var(--color-primary);
+  border-color: var(--blue-200);
+}
+#sound-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-primary);
+}
+.sound-icon {
+  display: block;
+  pointer-events: none;
+}
