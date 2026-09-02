@@ -7,8 +7,8 @@
   padding:32px 24px;
   display:flex;
   flex-direction:column;
-  align-items:center;
-  justify-content:center;
+  align-items:stretch;
+  justify-content:flex-start;
   gap:18px;
   min-height:480px;
   position:relative;
@@ -68,6 +68,13 @@
 #click-button:hover{transform:translateY(-2px);background:var(--stone-800);box-shadow:0 8px 20px color-mix(in srgb,var(--stone-900) 14%,transparent)}
 #click-button:active{transform:scale(.98);background:var(--stone-900);box-shadow:var(--shadow-sm)}
 #click-button:focus-visible{outline:none;box-shadow:var(--shadow-illus),0 0 0 3px color-mix(in srgb,var(--stone-900) 18%,transparent)}
+.progress-wrap{display:flex;flex-direction:column;gap:6px;width:100%}
+.progress-track{height:8px;background:var(--stone-100);border-radius:var(--radius-pill);overflow:hidden;border:1px solid var(--color-border)}
+.progress-fill{height:100%;width:0%;background:var(--stone-900);border-radius:var(--radius-pill);transition:width .35s cubic-bezier(.22,1,.36,1)}
+.progress-wrap.is-complete .progress-fill{background:var(--emerald-600)}
+.progress-meta{display:flex;justify-content:space-between;font-size:var(--text-caption);color:var(--color-muted);letter-spacing:var(--tracking-wide)}
+.replay-button{font-family:var(--font-body);font-size:var(--text-body-sm);font-weight:var(--font-weight-semi);color:var(--stone-900);background:var(--color-card);border:1px solid var(--color-border);border-radius:var(--radius-pill);padding:8px 18px;cursor:pointer}
+.replay-button:hover{background:var(--surface-raised)}
 .confetti-piece,.click-particle{position:fixed;pointer-events:none;z-index:1000;font-weight:700}
 #particle-container{position:absolute;inset:0;pointer-events:none}
 @keyframes floatUp{0%{opacity:0;transform:translate(-50%,-30%) scale(.85)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}100%{opacity:0;transform:translate(-50%,-85%) scale(1)}}

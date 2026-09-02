@@ -1,4 +1,5 @@
 /* Shop — sidebar, items, buy button */
+.shop-handle{display:none}
 .shop-area{
   background:var(--color-card);
   border-radius:var(--radius-lg);

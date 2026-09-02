@@ -2,7 +2,8 @@
 // Generate src/js/mechanics/graphData.js from real source graph.
 import fs from 'node:fs';
 import path from 'node:path';
-const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+import { fileURLToPath } from 'node:url';
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(ROOT, 'src');
 const OUT = path.join(SRC, 'js/mechanics/graphData.js');
 const MANUAL = path.join(ROOT, 'scripts/graphData.manual.json');

@@ -3,6 +3,7 @@ import { SHOP_ITEMS } from './shopConfig.js';
 import { spawnConfetti } from '../utils/confetti.js';
 import { icon } from './illustrations/icons.js';
 import { play, unlock } from './audio/audioManager.js';
+import { centerPurchasable, setupMobileSwap } from './shopMobile.js';
 
 let container = null;
 
@@ -18,10 +19,22 @@ export function initShop() {
     container.appendChild(el);
   });
   refreshShop();
+  setupMobileSwap(container);
 }
 
 export function refreshShop() {
   if (!container) return;
+  if (state.completed) {
+    const els = container.querySelectorAll('.shop-item');
+    els.forEach((el) => {
+      el.classList.add('disabled');
+      el.querySelector('.buy-button')?.classList.add('disabled');
+      const c = el.querySelector('.shop-item-cost');
+      if (c) c.textContent = 'Done';
+    });
+    centerPurchasable(container);
+    return;
+  }
   const els = container.querySelectorAll('.shop-item');
   SHOP_ITEMS.forEach((item, i) => {
     const el = els[i]; if (!el) return;
@@ -38,6 +51,7 @@ export function refreshShop() {
     el.querySelector('.buy-button').classList.toggle('disabled', !can);
     el.querySelector('.shop-item-cost').textContent = `Cost: ${cost}`;
   });
+  centerPurchasable(container);
 }
 
 function handleBuy(idx) {

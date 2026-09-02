@@ -17,5 +17,5 @@
 .mascot{flex-shrink:0;filter:drop-shadow(0 4px 10px color-mix(in srgb,var(--stone-900) 10%,transparent))}
 .mascot-bubble{display:flex;align-items:center;gap:10px;background:var(--illus-blob);border:var(--illus-outline-w) solid var(--illus-outline);border-radius:999px;padding:8px 14px;font-weight:600;font-size:var(--text-body-sm)}
 .peek{position:absolute;top:-10px;right:14px;width:56px;pointer-events:none;z-index:2}
-@media(max-width:768px){.peek{display:none}.stat-strip{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:480px){.stat-strip{gap:8px}.stat-card{min-height:84px;padding:12px}.illus-icon{width:32px;height:32px}}
+@media(max-width:768px){.peek{display:none}.game-area .stat-strip{order:10;display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;margin-top:16px;padding-bottom:4px}.game-area .stat-strip::-webkit-scrollbar{display:none}.game-area .stat-strip .stat-card{flex:1 0 22%;min-width:72px;min-height:64px;padding:10px 8px;scroll-snap-align:start}}
+@media(max-width:480px){.stat-strip{gap:8px}.game-area .stat-strip .stat-card{flex:0 0 22%;min-height:64px;padding:10px 8px}.illus-icon{width:32px;height:32px}}

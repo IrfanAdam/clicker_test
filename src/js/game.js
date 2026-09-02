@@ -1,16 +1,19 @@
-import { state, MAX_SCORE, addScore } from './state.js';
+import { state, GOAL, addScore, resetGoal } from './state.js';
 import { refreshShop } from './shop.js';
 import { renderStatStrip } from './illustrations/statStrip.js';
 import { play, unlock } from './audio/audioManager.js';
 
-let scoreEl, statusEl, btn, clickTimer = null;
+let scoreEl, statusEl, btn, replayBtn, clickTimer = null;
 
 export function initGame() {
   scoreEl = document.getElementById('score-value');
   statusEl = document.getElementById('status-text');
   btn = document.getElementById('click-button');
+  replayBtn = document.getElementById('replay-button');
   if (btn) btn.onclick = handleClick;
+  if (replayBtn) replayBtn.onclick = handleReplay;
   document.addEventListener('score:changed', updateUI);
+  document.addEventListener('goal:reached', onGoalReached);
   setInterval(tick, 1000);
   renderStatStrip();
   updateUI();
@@ -23,25 +26,41 @@ function updateUI() {
 }
 
 function handleClick() {
-  if (!btn) return;
+  if (!btn || state.completed) return;
   unlock();
-  const power = Math.min(state.clickPower * state.multiplier, MAX_SCORE - state.score);
+  const power = Math.min(state.clickPower * state.multiplier, GOAL - state.score);
   state.streak = (state.streak || 0) + 1;
   clearTimeout(clickTimer);
   clickTimer = setTimeout(() => { state.streak = 0; updateUI(); }, 1800);
-  // tactile press — immediate
   play('click');
-  // score increment — via common path, 42ms after tactile for separation
   if (power > 0) addScore(power, { pitch: state.streak, delay: 42 });
   else updateUI();
   const colors = ['var(--blue-600)', 'var(--amber-700)', 'var(--emerald-700)', 'var(--rose-700)', 'var(--violet-700)', 'var(--cyan-600)', 'var(--orange-900)', 'var(--orange-700)'];
   const color = colors[Math.floor(Math.random() * colors.length)];
   spawnParticle(`+${power}`, color, state.score < 500 ? 1 : 1.3);
-  setTimeout(() => { if (statusEl) statusEl.textContent = 'Ready to click?'; }, 600);
+  setTimeout(() => { if (statusEl && !state.completed) statusEl.textContent = 'Ready to click?'; }, 600);
+}
+
+function onGoalReached() {
+  unlock();
+  play('score', { pitch: 8 });
+  if (statusEl) statusEl.textContent = 'Goal achieved! 🎉 — Press Replay';
+  if (btn) { btn.disabled = true; btn.style.opacity = '.55'; btn.style.pointerEvents = 'none'; }
+  if (replayBtn) replayBtn.hidden = false;
+  spawnConfettiBurst();
+}
+
+function handleReplay() {
+  resetGoal();
+  if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.pointerEvents = ''; }
+  if (replayBtn) replayBtn.hidden = true;
+  if (statusEl) statusEl.textContent = 'Click the button to begin!';
+  updateUI();
 }
 
 function tick() {
-  if (state.autoClickers > 0) addScore(state.autoClickers * state.multiplier);
+  if (state.completed || state.autoClickers === 0) return;
+  addScore(state.autoClickers * state.multiplier);
 }
 
 function spawnParticle(text, color, scale) {
@@ -52,4 +71,11 @@ function spawnParticle(text, color, scale) {
   document.body.appendChild(el);
   requestAnimationFrame(() => { el.className = 'float-particle burst'; });
   setTimeout(() => el.remove(), 800);
+}
+
+function spawnConfettiBurst() {
+  const colors = ['var(--blue-600)', 'var(--amber-600)', 'var(--emerald-600)', 'var(--rose-600)', '#ffcd1a'];
+  for (let i = 0; i < 18; i++) {
+    setTimeout(() => spawnParticle('✦', colors[i % colors.length], 1.6), i * 32);
+  }
 }
