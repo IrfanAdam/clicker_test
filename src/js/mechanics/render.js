@@ -157,8 +157,8 @@ export function drawNodes(ctx,scale,hover,selected){
     // label — left aligned with dot offset (compact horizontal padding)
     const leftPad=12;
     const contentW=n.w-leftPad-4;
-    // use 7.2 world size for Supabase compact rows
-    const labelFit=fitText(ctx,n.label,contentW,7.2,scale,'Inter, sans-serif','600');
+    // use 10 world size — larger text, RH/n.h stay 18 (fits vertically, truncates if wider than contentW)
+    const labelFit=fitText(ctx,n.label,contentW,10,scale,'Inter, sans-serif','600');
     ctx.font=labelFit.font; ctx.fillStyle=dim? token('--stone-500'): token('--stone-900'); ctx.textAlign='left'; ctx.textBaseline='middle';
     ctx.fillText(labelFit.text,n.x+leftPad,n.y+n.h/2+0.3);
     // file/sub hint on right if space — Supabase shows type on right in muted
@@ -166,7 +166,7 @@ export function drawNodes(ctx,scale,hover,selected){
     if(n.w>88 && contentW>40){
       const subText=n.sub.split('·')[0].trim()||n.sub;
       // measure remaining
-      ctx.font=`500 ${7/scale}px Inter, sans-serif`; ctx.fillStyle=token('--stone-500'); ctx.textAlign='right';
+      ctx.font=`500 ${8.2/scale}px Inter, sans-serif`; ctx.fillStyle=token('--stone-500'); ctx.textAlign='right';
       const tw=ctx.measureText(labelFit.text).width/scale;
       const avail=contentW - tw - 4;
       if(avail>22){

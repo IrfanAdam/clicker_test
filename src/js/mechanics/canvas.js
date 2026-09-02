@@ -97,7 +97,7 @@ export function createMechanicsCanvas(canvas, tooltip){
   });
   canvas.addEventListener('wheel',e=>{
     e.preventDefault(); const r=canvas.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
-    const k=e.deltaY>0?.92:1.08, ns=Math.max(.35,Math.min(1.8,scale*k));
+    const k=e.deltaY>0?.92:1.08, ns=Math.max(.18,Math.min(3.8,scale*k));
     ox=mx-(mx-ox)*(ns/scale); oy=my-(my-oy)*(ns/scale); scale=ns; draw();
     const p=world(e), h=hitNode(p); if(h||hover) tip(h||hover);
   },{passive:false});

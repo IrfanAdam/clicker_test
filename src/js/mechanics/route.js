@@ -58,6 +58,7 @@ export function getRoute(a,b,ax,ay,bx,by){
     let idx=groupEdges.findIndex(e=>e.from===a.id&&e.to===b.id);if(idx<0) idx=0;
     const lane=6+idx*9;
     best=buildSameGroup(a,b,lane);bestC=cost(best,a,b);
+    // also try neighboring lane +4 to avoid group hit if needed
     const alt=buildSameGroup(a,b,lane+4);const ca=cost(alt,a,b);if(ca+6<bestC){best=alt;bestC=ca;}
   } else if(stacked){
     for(const off of [4,12,20,28]) tryCand(buildStacked(a,b,off));
