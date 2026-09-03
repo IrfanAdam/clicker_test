@@ -66,4 +66,4 @@
 }
 *,*::before,*::after{box-sizing:border-box}
 html{font-family:var(--font-body);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
-body{margin:0;padding:0;background:var(--color-bg);color:var(--color-text);min-height:100vh;line-height:var(--leading-normal)}
+body{margin:0;padding:0;background:var(--color-bg);color:var(--color-text);min-height:100vh;min-height:100dvh;line-height:var(--leading-normal)}
