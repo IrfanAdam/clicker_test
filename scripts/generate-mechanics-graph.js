@@ -73,22 +73,26 @@ function extractNodes(files){
 function extractEdges(files, nodeIds){
   const edges=[];
   const has=(a,b,k)=>edges.find(e=>e.from===a && e.to===b && e.kind===k);
-  const push=(from,to,kind,label)=>{
+  const push=(from,to,kind,label,access)=>{
     if(!nodeIds.has(from)||!nodeIds.has(to)) return;
     if(has(from,to,kind)) return;
-    const e={from,to,kind}; if(label) e.label=label; edges.push(e);
+    const e={from,to,kind}; if(label) e.label=label; if(access) e.access=access; edges.push(e);
   };
+  // 3 kinds: call (control, incl. setup binds + boot flow) · data (state access,
+  // access: read|write|both; round-trip calls like getCost are data/both) ·
+  // signal (dispatch / delivery of score:changed). Arrow stays from -> to;
+  // data/both draws a head at each end. Subscribes are not edges.
   const CORE_EDGES=[
-    ['dom','init','flow','DOMContentLoaded'],['init','initShop','call'],['init','initGame','call'],['init','initSound','call'],
-    ['initGame','click','bind','btn.onclick'],['initGame','tick','bind','setInterval 1s'],['initGame','event','event','on score:changed'],['initGame','updateUI','call'],['initGame','statStrip','call'],
-    ['click','audioMgr','call','unlock + play click'],['click','addScore','call','power = clickPower*mult'],['click','particle','call'],['click','state','read','read streak/power'],
-    ['tick','state','read','read autoClickers'],['tick','addScore','call'],['addScore','audioMgr','call','play score'],['addScore','event','event','dispatch'],
-    ['event','updateUI','event'],['updateUI','refresh','call'],['updateUI','statStrip','call'],['updateUI','state','read'],
-    ['handleBuy','getCost','call'],['handleBuy','state','read'],['handleBuy','state','write','deduct + owned'],['handleBuy','audioMgr','call','error / buy'],['handleBuy','shopCfg','call','effect()'],['handleBuy','confetti','call'],['handleBuy','event','event','dispatch'],
-    ['refresh','getCost','call'],['refresh','state','read'],['audioMgr','sounds','call'],['initShop','shopCfg','read'],['initShop','refresh','call'],['initShop','handleBuy','bind','btn.onclick'],
-    ['statStrip','state','read','score / streak'],
+    ['dom','init','call','DOMContentLoaded'],['init','initShop','call'],['init','initGame','call'],['init','initSound','call'],
+    ['initGame','click','call','btn.onclick'],['initGame','tick','call','setInterval 1s'],['initGame','updateUI','call'],['initGame','statStrip','call'],
+    ['click','audioMgr','call','unlock + play click'],['click','addScore','call','power = clickPower*mult'],['click','particle','call'],['click','state','data','reads + writes streak/power','both'],
+    ['tick','state','data','read autoClickers','read'],['tick','addScore','call'],['addScore','audioMgr','call','play score'],['addScore','event','signal','dispatch'],
+    ['event','updateUI','signal'],['updateUI','refresh','call'],['updateUI','statStrip','call'],['updateUI','state','data',null,'read'],
+    ['handleBuy','getCost','data',null,'both'],['handleBuy','state','data','reads + writes: deduct + owned','both'],['handleBuy','audioMgr','call','error / buy'],['handleBuy','shopCfg','call','effect()'],['handleBuy','confetti','call'],['handleBuy','event','signal','dispatch'],
+    ['refresh','getCost','data',null,'both'],['refresh','state','data',null,'read'],['audioMgr','sounds','call'],['initShop','shopCfg','data',null,'read'],['initShop','refresh','call'],['initShop','handleBuy','call','btn.onclick'],
+    ['statStrip','state','data','score / streak','read'],
   ];
-  CORE_EDGES.forEach(([f,t,k,l])=>push(f,t,k,l));
+  CORE_EDGES.forEach(([f,t,k,l,a])=>push(f,t,k,l,a));
   for(const f of files){
     const txt=fs.readFileSync(f,'utf8');
     if(/score:changed/.test(txt) && /dispatchEvent/.test(txt)){

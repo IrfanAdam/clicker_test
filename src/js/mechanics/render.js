@@ -5,15 +5,11 @@ export function token(n){ return getComputedStyle(document.documentElement).getP
 export function kindColor(k){ return token(KINDS[k]?.color || '--stone-500'); }
 export function drawRound(c,x,y,w,h,r){ c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath(); }
 
-const EDGE_STYLES={ call:{color:'--stone-500',dash:[],w:1.25,head:'tri'}, read:{color:'--violet-600',dash:[],w:1.2,head:'chevron'}, write:{color:'--orange-600',dash:[],w:1.7,head:'triTick'}, event:{color:'--amber-600',dash:[7,5],w:1.25,head:'diamond'}, bind:{color:'--blue-600',dash:[2.5,5],w:1.25,head:'circleTri'}, flow:{color:'--blue-600',dash:[],w:1.6,head:'double'} };
+const EDGE_STYLES={ call:{color:'--stone-500',dash:[],w:1.25,head:'tri'}, data:{color:'--violet-600',dash:[],w:1.25,head:'tri'}, signal:{color:'--amber-600',dash:[7,5],w:1.25,head:'diamond'} };
 function drawHead(ctx,head,s,color){ const sc=s;
   function halo(path){ ctx.save(); ctx.fillStyle=token('--color-card'); ctx.strokeStyle=token('--color-card'); ctx.lineWidth=2.2/sc; ctx.lineJoin='round'; ctx.lineCap='round'; path(true); ctx.fill(); ctx.stroke(); ctx.restore(); }
   if(head==='tri'){ halo(d=>{ctx.beginPath();ctx.moveTo(0.7,0);ctx.lineTo(-6.2/sc,-2.9/sc);ctx.lineTo(-6.2/sc,2.9/sc);ctx.closePath();}); ctx.fillStyle=color; ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-5.5/sc,-2.5/sc);ctx.lineTo(-5.5/sc,2.5/sc);ctx.closePath();ctx.fill(); }
-  else if(head==='chevron'){ ctx.strokeStyle=color; ctx.lineWidth=1.4/sc; ctx.beginPath();ctx.moveTo(-4.8/sc,-2.9/sc);ctx.lineTo(0,0);ctx.lineTo(-4.8/sc,2.9/sc);ctx.stroke(); halo(d=>{ if(d) return; }); }
-  else if(head==='triTick'){ halo(d=>{ctx.beginPath();ctx.moveTo(0.7,0);ctx.lineTo(-6.2/sc,-2.9/sc);ctx.lineTo(-6.2/sc,2.9/sc);ctx.closePath();}); ctx.fillStyle=color; ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-5.5/sc,-2.5/sc);ctx.lineTo(-5.5/sc,2.5/sc);ctx.closePath();ctx.fill(); ctx.strokeStyle=color; ctx.lineWidth=1/sc; ctx.beginPath();ctx.moveTo(-2.8/sc,-2/sc);ctx.lineTo(-2.8/sc,2/sc);ctx.stroke(); }
   else if(head==='diamond'){ halo(d=>{ctx.beginPath();ctx.moveTo(0.7,0);ctx.lineTo(-3.2/sc,-2.9/sc);ctx.lineTo(-6.4/sc,0);ctx.lineTo(-3.2/sc,2.9/sc);ctx.closePath();}); ctx.fillStyle=color; ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-2.8/sc,-2.5/sc);ctx.lineTo(-5.6/sc,0);ctx.lineTo(-2.8/sc,2.5/sc);ctx.closePath();ctx.fill(); }
-  else if(head==='circleTri'){ halo(d=>{ctx.beginPath();ctx.moveTo(0.7,0);ctx.lineTo(-6.2/sc,-2.9/sc);ctx.lineTo(-6.2/sc,2.9/sc);ctx.closePath();}); ctx.fillStyle=color; ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-5.5/sc,-2.5/sc);ctx.lineTo(-5.5/sc,2.5/sc);ctx.closePath();ctx.fill(); ctx.beginPath();ctx.arc(-3.8/sc,0,1.7/sc,0,Math.PI*2);ctx.fillStyle=token('--color-card');ctx.fill(); ctx.strokeStyle=color;ctx.lineWidth=1/sc;ctx.stroke(); }
-  else if(head==='double'){ halo(d=>{ctx.beginPath();ctx.moveTo(0.7,0);ctx.lineTo(-4.5/sc,-2.4/sc);ctx.lineTo(-4.5/sc,2.4/sc);ctx.closePath(); ctx.moveTo(-4.5/sc,0);ctx.lineTo(-9/sc,-2.4/sc);ctx.lineTo(-9/sc,2.4/sc);ctx.closePath();}); ctx.fillStyle=color; ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-4/sc,-2/sc);ctx.lineTo(-4/sc,2/sc);ctx.closePath();ctx.fill(); ctx.beginPath();ctx.moveTo(-4/sc,0);ctx.lineTo(-8/sc,-2/sc);ctx.lineTo(-8/sc,2/sc);ctx.closePath();ctx.fill(); }
 }
 
 export function drawGroups(ctx,scale,hoverGroup,selected){
@@ -102,6 +98,11 @@ export function drawEdges(ctx,scale,hover,selected,hovEdge,selEdge){
     ctx.strokeStyle=strokeCol;
     ctx.lineWidth=lw; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.setLineDash(st.dash.length?st.dash.map(v=>v/scale):[]); ctx.stroke(); ctx.setLineDash([]); ctx.restore();
     ctx.save(); ctx.globalAlpha=1; ctx.translate(r.bx,r.by); ctx.rotate(ang); drawHead(ctx,st.head,scale,strokeCol); ctx.restore();
+    // data/both: one path, head at each end (tail head points outward, same strokeCol, full opacity)
+    if(e.kind==='data' && e.access==='both' && path.length>1){
+      const tailAng=Math.atan2(path[0].y-path[1].y, path[0].x-path[1].x);
+      ctx.save(); ctx.globalAlpha=1; ctx.translate(path[0].x,path[0].y); ctx.rotate(tailAng); drawHead(ctx,st.head,scale,strokeCol); ctx.restore();
+    }
     const srcKind=NODES.find(n=>n.id===e.from)?.kind; const dotCol=kindColor(srcKind||'game');
     ctx.save(); ctx.globalAlpha=isDim? .24 : sel||hov ? 1 : .88;
     ctx.beginPath(); ctx.arc(path[0].x,path[0].y,3.8/scale,0,Math.PI*2); ctx.fillStyle=sel?token('--stone-900'):hov?token('--stone-700'):dotCol; ctx.fill(); ctx.strokeStyle=token('--color-card'); ctx.lineWidth=1.7/scale; ctx.stroke();
@@ -111,7 +112,7 @@ export function drawEdges(ctx,scale,hover,selected,hovEdge,selEdge){
     const showLabel=e.label && (sel||hov) && dist*scale>34;
     if(showLabel){
       const mid=path[Math.floor(path.length/2)], prev=path[Math.floor(path.length/2)-1]||mid; const lx=(mid.x+prev.x)/2+4/scale, ly=(mid.y+prev.y)/2-5/scale; ctx.font=`${9.5/scale}px ${token('--font-body')}`;
-      const isEvent=e.kind==='event', isBind=e.kind==='bind', bg=isEvent?'--amber-50':isBind?'--blue-50':'--stone-50';
+      const isSignal=e.kind==='signal', isData=e.kind==='data', bg=isSignal?'--amber-50':isData?'--violet-50':'--stone-50';
       const tw=ctx.measureText(e.label).width,th=12/scale; ctx.fillStyle=token(bg); if(!token(bg)) ctx.fillStyle=token('--color-card'); ctx.globalAlpha=.98;
       drawRound(ctx,lx-5/scale,ly-th+2/scale,tw+10/scale,th+4/scale,5/scale); ctx.fill(); ctx.globalAlpha=1;
       ctx.strokeStyle=token('--color-border'); ctx.lineWidth=1/scale; ctx.stroke();

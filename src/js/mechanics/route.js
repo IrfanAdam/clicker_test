@@ -6,7 +6,10 @@ const BY_ID = new Map(GROUPS.map(g => [g.id, g]));
 const grp = n => BY_ID.get(n.group);
 const STUB = 12, PAD = 8;
 const cx = n => n.x + n.w / 2, cy = n => n.y + n.h / 2;
-const EDGE_IDX = new Map(EDGES.map((e, i) => [e.from + '>' + e.to, i]));
+// One route per node pair (directionality lives in heads, not paths):
+// unordered key so a/b and b/a share the lane + cache entry.
+const pairKey = (x, y) => x < y ? x + '<>' + y : y + '<>' + x;
+const EDGE_IDX = new Map(EDGES.map((e, i) => [pairKey(e.from, e.to), i]));
 // Obstacles: sibling nodes (padded) + foreign groups. Endpoints use exact
 // bounds (pad 0) so stubs leaving/entering ports stay legal, but any middle
 // leg crossing an endpoint still scores as a hit — no path may pierce a node.
@@ -71,12 +74,12 @@ function clean(pts) {
   return c;
 }
 export function getRoute(a, b, ax, ay, bx, by) {
-  const key = `${a.id}->${b.id}|${a.x},${a.y},${b.x},${b.y}`;
+  const key = `${pairKey(a.id, b.id)}|${a.x},${a.y},${b.x},${b.y}`;
   if (cache.has(key)) return cache.get(key);
   const ga = grp(a), gb = grp(b);
   if (!ga || !gb) { const f = [{ x: ax, y: ay }, { x: bx, y: by }]; const r = { path: f, cost: 999, ang: Math.atan2(by - ay, bx - ax), ax, ay, bx, by }; cache.set(key, r); return r; }
   const P = ports(a), Q = ports(b), o = obstacles(a, b);
-  const idx = EDGE_IDX.get(a.id + '>' + b.id) ?? 0;
+  const idx = EDGE_IDX.get(pairKey(a.id, b.id)) ?? 0;
   const dx = cx(b) - cx(a), dy = cy(b) - cy(a);
   let cands;
   if (ga.id === gb.id) cands = [join(P.E, Q.E, o, (idx % 4) * 10), highway(a, b, o, idx)];

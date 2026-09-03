@@ -1,5 +1,6 @@
 import { NODES, KINDS, GROUPS, EDGES } from './graphData.js';
 import { token, drawGroups, drawGrid, drawEdges, drawNodes, edgePath } from './render.js';
+import { nodeTipHTML } from './popover.js';
 import { clearRouteCache } from './route.js';
 const RH=18,RG=3,HH=32,PY=4,PX=3;
 export function createMechanicsCanvas(canvas, tooltip){
@@ -46,7 +47,7 @@ export function createMechanicsCanvas(canvas, tooltip){
   }
   function tip(n){
     if(!n){ tooltip.hidden=true; return; } tooltip.hidden=false;
-    tooltip.innerHTML=`<strong>${n.label}</strong><span style="margin-top:var(--space-2);line-height:var(--leading-normal)">${n.desc}</span><em>${n.file} · ${KINDS[n.kind]?.label||n.kind} · ${n.sub}</em>`;
+    tooltip.innerHTML = nodeTipHTML(n, KINDS);
     let x=(n.x*scale+ox)+n.w*scale+10, y=(n.y*scale+oy); const tw=280;
     if(x+tw>W-12) x=(n.x*scale+ox)-tw-10; if(y+110>H-12) y=H-122; if(y<8) y=8; if(x<8) x=8;
     tooltip.style.left=x+'px'; tooltip.style.top=y+'px';
