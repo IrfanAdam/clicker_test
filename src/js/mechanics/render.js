@@ -1,4 +1,4 @@
-import { NODES, EDGES, KINDS, GROUPS } from './graphData.js';
+import { NODES, EDGES, KINDS, GROUPS } from './graph.js';
 import { fitTextSubtle, subtleFont } from './text.js';
 import { getRoute } from './route.js';
 export function token(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim()||getComputedStyle(document.documentElement).getPropertyValue('--stone-900').trim(); }

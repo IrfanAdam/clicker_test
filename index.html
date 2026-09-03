@@ -73,7 +73,14 @@
       <div class="mechanics-canvas-wrap">
         <canvas id="mechanics-canvas" width="1600" height="900" aria-label="Mechanics wiring canvas"></canvas>
         <div id="mechanics-tooltip" class="mechanics-tooltip" hidden></div>
-        <button id="mechanics-chrome-toggle" class="mechanics-chrome-toggle mechanics-float-toggle" type="button" aria-pressed="false" title="Toggle chrome (H)">◱ Hide</button>
+        <div class="mechanics-float-controls" role="group" aria-label="Mechanics controls">
+          <label for="mechanics-mode" class="mechanics-mode-label">View</label>
+          <select id="mechanics-mode" class="mechanics-mode-select" aria-label="Mechanics view mode">
+            <option value="functions" selected>Functions</option>
+            <option value="components">Components</option>
+          </select>
+          <button id="mechanics-chrome-toggle" class="mechanics-chrome-toggle mechanics-float-toggle" type="button" aria-pressed="false" title="Toggle chrome (H)">◱ Hide</button>
+        </div>
         <div class="mechanics-float-legends" aria-label="Legend">
           <div class="mechanics-legend mechanics-legend--float" aria-label="Lane and kind legend">
             <span class="mech-legend-label">Lanes:</span>

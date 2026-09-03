@@ -1,18 +1,12 @@
-import { NODES, GROUPS, EDGES } from './graphData.js';
+import { NODES, GROUPS, EDGES } from './graph.js';
 import { violatesCorridor } from './corridor.js';
 const cache = new Map();
 export function clearRouteCache() { cache.clear(); }
-const BY_ID = new Map(GROUPS.map(g => [g.id, g]));
-const grp = n => BY_ID.get(n.group);
+const grp = n => GROUPS.find(g=>g.id===n.group);
 const STUB = 12, PAD = 8;
 const cx = n => n.x + n.w / 2, cy = n => n.y + n.h / 2;
-// One route per node pair (directionality lives in heads, not paths):
-// unordered key so a/b and b/a share the lane + cache entry.
 const pairKey = (x, y) => x < y ? x + '<>' + y : y + '<>' + x;
-const EDGE_IDX = new Map(EDGES.map((e, i) => [pairKey(e.from, e.to), i]));
-// Obstacles: sibling nodes (padded) + foreign groups. Endpoints use exact
-// bounds (pad 0) so stubs leaving/entering ports stay legal, but any middle
-// leg crossing an endpoint still scores as a hit — no path may pierce a node.
+function edgeIdx(aId,bId){ const k=pairKey(aId,bId); for(let i=0;i<EDGES.length;i++){ if(pairKey(EDGES[i].from,EDGES[i].to)===k) return i; } return 0; }
 function obstacles(a, b) {
   const ga = grp(a), gb = grp(b), o = [];
   for (const n of NODES) { const p = (n === a || n === b) ? 0 : PAD; o.push({ x: n.x - p, y: n.y - p, w: n.w + p * 2, h: n.h + p * 2, wgt: 3 }); }
@@ -21,7 +15,6 @@ function obstacles(a, b) {
 }
 function hitV(x, y1, y2, o) { const lo = Math.min(y1, y2), hi = Math.max(y1, y2); for (const r of o) if (x > r.x && x < r.x + r.w && hi > r.y && lo < r.y + r.h) return r; return null; }
 function hitH(y, x1, x2, o) { const lo = Math.min(x1, x2), hi = Math.max(x1, x2); for (const r of o) if (y > r.y && y < r.y + r.h && hi > r.x && lo < r.x + r.w) return r; return null; }
-// Slide a gutter to the nearest parallel channel that crosses nothing.
 function freeCh(v, f1, f2, vert, o) {
   const h = vert ? hitV(v, f1, f2, o) : hitH(v, f1, f2, o);
   if (!h) return v;
@@ -34,7 +27,6 @@ function freeCh(v, f1, f2, vert, o) {
 function ports(n) {
   return { E: { x: n.x + n.w, y: cy(n), dx: 1, dy: 0 }, W: { x: n.x, y: cy(n), dx: -1, dy: 0 }, S: { x: cx(n), y: n.y + n.h, dx: 0, dy: 1 }, N: { x: cx(n), y: n.y, dx: 0, dy: -1 } };
 }
-// Join two oriented ports with ≤2 bends; gutter snapped to a free channel.
 function join(p, q, o, hint = 0) {
   const s0 = { x: p.x + p.dx * STUB, y: p.y + p.dy * STUB }, s1 = { x: q.x + q.dx * STUB, y: q.y + q.dy * STUB };
   if (p.dx !== 0 && q.dx !== 0) { const gx = freeCh((s0.x + s1.x) / 2 + hint, s0.y, s1.y, true, o); return [p, s0, { x: gx, y: s0.y }, { x: gx, y: s1.y }, s1, q]; }
@@ -42,7 +34,6 @@ function join(p, q, o, hint = 0) {
   const e1 = [p, s0, { x: s1.x, y: s0.y }, s1, q], e2 = [p, s0, { x: s0.x, y: s1.y }, s1, q];
   return cost(e1, o) <= cost(e2, o) ? e1 : e2;
 }
-// Bottom highway fallback: both ends drop from S ports to a per-edge lane.
 function highway(a, b, o, idx) {
   const P = ports(a), Q = ports(b);
   const s0 = { x: P.S.x, y: P.S.y + STUB }, s1 = { x: Q.S.x, y: Q.S.y + STUB };
@@ -60,7 +51,6 @@ function cost(path, o) {
   }
   return h * 400 + (path.length - 2) * 12 + len * 0.05;
 }
-// Drop duplicate + collinear points so corners are evenly spaced for round joins.
 function clean(pts) {
   const d = [];
   for (const p of pts) { const l = d[d.length - 1]; if (!l || Math.abs(p.x - l.x) > .5 || Math.abs(p.y - l.y) > .5) d.push({ x: Math.round(p.x * 2) / 2, y: Math.round(p.y * 2) / 2 }); }
@@ -79,15 +69,13 @@ export function getRoute(a, b, ax, ay, bx, by) {
   const ga = grp(a), gb = grp(b);
   if (!ga || !gb) { const f = [{ x: ax, y: ay }, { x: bx, y: by }]; const r = { path: f, cost: 999, ang: Math.atan2(by - ay, bx - ax), ax, ay, bx, by }; cache.set(key, r); return r; }
   const P = ports(a), Q = ports(b), o = obstacles(a, b);
-  const idx = EDGE_IDX.get(pairKey(a.id, b.id)) ?? 0;
+  const idx = edgeIdx(a.id,b.id);
   const dx = cx(b) - cx(a), dy = cy(b) - cy(a);
   let cands;
   if (ga.id === gb.id) cands = [join(P.E, Q.E, o, (idx % 4) * 10), highway(a, b, o, idx)];
   else if (Math.abs(dx) > Math.abs(dy)) cands = dx > 0 ? [join(P.E, Q.W, o), join(P.E, Q.E, o, 14), highway(a, b, o, idx)] : [join(P.W, Q.E, o), join(P.W, Q.W, o, -14), highway(a, b, o, idx)];
   else cands = dy > 0 ? [join(P.S, Q.N, o), join(dx >= 0 ? P.E : P.W, dx >= 0 ? Q.W : Q.E, o), join(P.E, Q.E, o, 18), join(P.W, Q.W, o, -18), highway(a, b, o, idx)] : [join(P.N, Q.S, o), join(dx >= 0 ? P.E : P.W, dx >= 0 ? Q.W : Q.E, o), join(P.E, Q.E, o, 18), join(P.W, Q.W, o, -18), highway(a, b, o, idx)];
   let best = cands[0], bc = Infinity;
-  // Drop candidates that spear through a card to reach a side port;
-  // the survivors route below/around instead. Keep all if none survive.
   const fair = cands.filter(p => !violatesCorridor(clean(p), a, b));
   if (fair.length) cands = fair;
   for (const p of cands) { const c = cost(p, o); if (c < bc) { bc = c; best = p; } }

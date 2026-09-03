@@ -1,4 +1,4 @@
-import { EDGES, NODES } from './graphData.js';
+import { EDGES, NODES } from './graph.js';
 const KIND_TOKEN = { call: '--stone-500', data: '--violet-600', signal: '--amber-600' };
 const ACCESS_LABEL = { read: 'reads', write: 'writes', both: 'reads + writes' };
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));

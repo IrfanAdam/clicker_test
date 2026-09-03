@@ -1,4 +1,4 @@
-import { NODES, KINDS, GROUPS, EDGES } from './graphData.js';
+import { NODES, KINDS, GROUPS, EDGES, getMode, setMode as setGraphMode } from './graph.js';
 import { token, drawGroups, drawGrid, drawEdges, drawNodes, edgePath } from './render.js';
 import { nodeTipHTML } from './popover.js';
 import { clearRouteCache } from './route.js';
@@ -63,6 +63,20 @@ export function createMechanicsCanvas(canvas, tooltip){
     if(x+tw>W-12) x=(mid.x*scale+ox)-tw-12; if(y+110>H-12) y=H-122; if(y<8) y=8; if(x<8) x=8;
     tooltip.style.left=x+'px'; tooltip.style.top=y+'px';
   }
+  function setMode(next){
+    if(next!== 'functions' && next!== 'components') return;
+    if(getMode()===next) return;
+    setGraphMode(next);
+    clearRouteCache();
+    selected=null; selEdge=null; hover=null; hovEdge=null; hoverGroup=null;
+    tooltip.hidden=true;
+    // refit to new tree / grid BB so hierarchy stays framed
+    if(W&&H){
+      const b=getBB(); scale=Math.min(1,(W-48)/b.w,(H-80)/b.h);
+      ox=(W-b.w*scale)/2-b.minX*scale; oy=(H-b.h*scale)/2-b.minY*scale;
+    }
+    draw();
+  }
   canvas.addEventListener('pointermove',e=>{
     const p=world(e);
     if(dragGroup){
@@ -103,11 +117,16 @@ export function createMechanicsCanvas(canvas, tooltip){
   });
   canvas.addEventListener('dblclick',e=>{
     const p=world(e), hg=hitGroup(p); if(!hg) return;
-    const base={boot:{x:18,y:130},state:{x:162,y:16},game:{x:162,y:244},shop:{x:322,y:16},out:{x:322,y:244}}[hg.id];
+    const isIA=getMode()==='components';
+    const bases=isIA?{
+      shell:{x:166,y:16},layout:{x:166,y:190},game:{x:40,y:330},commerce:{x:292,y:330},feedback:{x:322,y:190}
+    }:{
+      boot:{x:18,y:130},state:{x:162,y:16},game:{x:162,y:244},shop:{x:322,y:16},out:{x:322,y:244}
+    };
+    const base=bases[hg.id];
     if(!base) return;
-    const dx=base.x-hg.x, dy=base.y-hg.y; hg.x=base.x; hg.y=base.y;
+    hg.x=base.x; hg.y=base.y;
     layoutGroup(hg);
-    NODES.filter(n=>n.group===hg.id).forEach(n=>{ n.x+=0; });
     clearRouteCache(); draw();
   });
   canvas.addEventListener('wheel',e=>{
@@ -125,5 +144,5 @@ export function createMechanicsCanvas(canvas, tooltip){
   });
   canvas.addEventListener('pointerleave',()=>{ hover=null; hoverGroup=null; hovEdge=null; tooltip.hidden=true; draw(); });
   window.addEventListener('resize',resize); resize();
-  return { resize, draw };
+  return { resize, draw, setMode, getMode };
 }
