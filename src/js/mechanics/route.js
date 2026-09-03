@@ -1,75 +1,91 @@
 import { NODES, GROUPS, EDGES } from './graphData.js';
-const cache=new Map();
-export function clearRouteCache(){ cache.clear(); }
-const GROUP_BY_ID=new Map(GROUPS.map(g=>[g.id,g]));
-function getGroup(n){ return GROUP_BY_ID.get(n.group); }
-function segHitsRect(x1,y1,x2,y2,r,pad=0){
-  const rx1=r.x-pad,ry1=r.y-pad,rx2=r.x+r.w+pad,ry2=r.y+r.h+pad;
-  const minX=Math.min(x1,x2),maxX=Math.max(x1,x2),minY=Math.min(y1,y2),maxY=Math.max(y1,y2);
-  if(maxX<rx1||minX>rx2||maxY<ry1||minY>ry2) return false;
-  if(x1===x2) return x1>=rx1&&x1<=rx2&&!(Math.max(y1,y2)<ry1||Math.min(y1,y2)>ry2);
-  if(y1===y2) return y1>=ry1&&y1<=ry2&&!(Math.max(x1,x2)<rx1||Math.min(x1,x2)>rx2);
-  return !(maxX<rx1||minX>rx2||maxY<ry1||minY>ry2);
+const cache = new Map();
+export function clearRouteCache() { cache.clear(); }
+const BY_ID = new Map(GROUPS.map(g => [g.id, g]));
+const grp = n => BY_ID.get(n.group);
+const STUB = 12, PAD = 8;
+const cx = n => n.x + n.w / 2, cy = n => n.y + n.h / 2;
+const EDGE_IDX = new Map(EDGES.map((e, i) => [e.from + '>' + e.to, i]));
+// Obstacles: sibling nodes (padded) + foreign groups. Endpoints use exact
+// bounds (pad 0) so stubs leaving/entering ports stay legal, but any middle
+// leg crossing an endpoint still scores as a hit — no path may pierce a node.
+function obstacles(a, b) {
+  const ga = grp(a), gb = grp(b), o = [];
+  for (const n of NODES) { const p = (n === a || n === b) ? 0 : PAD; o.push({ x: n.x - p, y: n.y - p, w: n.w + p * 2, h: n.h + p * 2, wgt: 3 }); }
+  for (const g of GROUPS) { if (g === ga || g === gb) continue; o.push({ x: g.x - 3, y: g.y - 3, w: g.w + 6, h: g.h + 6, wgt: 4 }); }
+  return o;
 }
-function buildDirect(a,b,off){
-  const sy=a.y+a.h/2,ty=b.y+b.h/2,ax=a.x+a.w/2,bx=b.x+b.w/2,fwd=ax<bx;
-  const sx=fwd?a.x+a.w:a.x,tx=fwd?b.x:b.x+b.w,stub=10;
-  const sx1=fwd?sx+stub:sx-stub,tx1=fwd?tx-stub:tx+stub,gutter=(sx+tx)/2+off;
-  const pts=[{x:sx,y:sy},{x:sx1,y:sy},{x:gutter,y:sy},{x:gutter,y:ty},{x:tx1,y:ty},{x:tx,y:ty}];
-  return pts.filter((p,i)=>i===0||p.x!==pts[i-1].x||p.y!==pts[i-1].y);
-}
-function buildBottomDetour(a,b,off,fwd){
-  const sy=a.y+a.h/2,ty=b.y+b.h/2,stub=12;
-  let sx,tx,sx1,tx1;
-  if(fwd){sx=a.x+a.w;tx=b.x;sx1=sx+stub;tx1=tx-stub;}else{sx=a.x;tx=b.x+b.w;sx1=sx-stub;tx1=tx+stub;}
-  const bottomY=Math.max(...GROUPS.map(g=>g.y+g.h))+16+off;
-  const pts=[{x:sx,y:sy},{x:sx1,y:sy},{x:sx1,y:bottomY},{x:tx1,y:bottomY},{x:tx1,y:ty},{x:tx,y:ty}];
-  return pts.filter((p,i)=>i===0||p.x!==pts[i-1].x||p.y!==pts[i-1].y);
-}
-function buildSameGroup(a,b,lane){
-  const g=getGroup(a),sy=a.y+a.h/2,ty=b.y+b.h/2,stub=7;
-  const sx=a.x+a.w,tx=b.x+b.w,outerX=g.x+g.w+7+lane;
-  const pts=[{x:sx,y:sy},{x:sx+stub,y:sy},{x:outerX,y:sy},{x:outerX,y:ty},{x:tx+stub,y:ty},{x:tx,y:ty}];
-  return pts.filter((p,i)=>i===0||p.x!==pts[i-1].x||p.y!==pts[i-1].y);
-}
-function buildStacked(a,b,off){
-  const ga=getGroup(a),gb=getGroup(b),sy=a.y+a.h/2,ty=b.y+b.h/2,stub=10;
-  const outerX=Math.max(ga.x+ga.w,gb.x+gb.w)+14+off,sx=a.x+a.w,tx=b.x+b.w;
-  const pts=[{x:sx,y:sy},{x:sx+stub,y:sy},{x:outerX,y:sy},{x:outerX,y:ty},{x:tx+stub,y:ty},{x:tx,y:ty}];
-  return pts.filter((p,i)=>i===0||p.x!==pts[i-1].x||p.y!==pts[i-1].y);
-}
-function cost(path,a,b){
-  let hits=0;const ga=getGroup(a),gb=getGroup(b);
-  for(const n of NODES){if(n===a||n===b) continue;for(let i=0;i<path.length-1;i++){const p=path[i],q=path[i+1];if(segHitsRect(p.x,p.y,q.x,q.y,n,6)) hits++;}}
-  for(const g of GROUPS){if(g===ga||g===gb) continue;for(let i=0;i<path.length-1;i++){const p=path[i],q=path[i+1];if(p.y>g.y+g.h+8&&q.y>g.y+g.h+8) continue;if(segHitsRect(p.x,p.y,q.x,q.y,g,-2)) hits+=2;}}
-  let len=0;for(let i=0;i<path.length-1;i++) len+=Math.hypot(path[i+1].x-path[i].x,path[i+1].y-path[i].y);
-  return hits*120+len*0.08+(path.length-2)*5;
-}
-export function getRoute(a,b,ax,ay,bx,by){
-  const key=`${a.id}->${b.id}|${a.x},${a.y},${b.x},${b.y}`;
-  if(cache.has(key)) return cache.get(key);
-  const ga=getGroup(a),gb=getGroup(b);
-  if(!ga||!gb){const f=[{x:ax,y:ay},{x:bx,y:by}];const r={path:f,cost:999,ang:Math.atan2(by-ay,bx-ax),ax,ay,bx,by};cache.set(key,r);return r;}
-  const same=ga.id===gb.id,forward=(a.x+a.w/2)<(b.x+b.w/2),stacked=Math.abs(ga.x-gb.x)<2&&ga.id!==gb.id;
-  let best=null,bestC=Infinity;const tryCand=p=>{const c=cost(p,a,b);if(c<bestC){bestC=c;best=p;}};
-  if(same){
-    const groupEdges=EDGES.filter(e=>{const fa=NODES.find(n=>n.id===e.from),fb=NODES.find(n=>n.id===e.to);return fa&&fb&&fa.group===ga.id&&fb.group===ga.id;});
-    groupEdges.sort((ea,eb)=>{const na=NODES.find(n=>n.id===ea.from),nb=NODES.find(n=>n.id===eb.from);return (na.y+ NODES.find(n=>n.id===ea.to).y)-(nb.y+ NODES.find(n=>n.id===eb.to).y);});
-    let idx=groupEdges.findIndex(e=>e.from===a.id&&e.to===b.id);if(idx<0) idx=0;
-    const lane=6+idx*9;
-    best=buildSameGroup(a,b,lane);bestC=cost(best,a,b);
-    // also try neighboring lane +4 to avoid group hit if needed
-    const alt=buildSameGroup(a,b,lane+4);const ca=cost(alt,a,b);if(ca+6<bestC){best=alt;bestC=ca;}
-  } else if(stacked){
-    for(const off of [4,12,20,28]) tryCand(buildStacked(a,b,off));
-    for(const off of [0,8,16,24,32]) tryCand(buildBottomDetour(a,b,off,forward));
-    for(const off of [-10,-4,4,10]) tryCand(buildDirect(a,b,off));
-  } else {
-    for(const off of [-12,-6,0,6,12]) tryCand(buildDirect(a,b,off));
-    for(const off of [0,8,16,24,32]) tryCand(buildBottomDetour(a,b,off,forward));
+function hitV(x, y1, y2, o) { const lo = Math.min(y1, y2), hi = Math.max(y1, y2); for (const r of o) if (x > r.x && x < r.x + r.w && hi > r.y && lo < r.y + r.h) return r; return null; }
+function hitH(y, x1, x2, o) { const lo = Math.min(x1, x2), hi = Math.max(x1, x2); for (const r of o) if (y > r.y && y < r.y + r.h && hi > r.x && lo < r.x + r.w) return r; return null; }
+// Slide a gutter to the nearest parallel channel that crosses nothing.
+function freeCh(v, f1, f2, vert, o) {
+  const h = vert ? hitV(v, f1, f2, o) : hitH(v, f1, f2, o);
+  if (!h) return v;
+  for (const d of [12, 22, 34, 48, 64, 88, 120, 160]) {
+    const away = vert ? (v < h.x + h.w / 2 ? -1 : 1) : (v < h.y + h.h / 2 ? -1 : 1);
+    for (const s of [away, -away]) { const c = v + s * d; if (!(vert ? hitV(c, f1, f2, o) : hitH(c, f1, f2, o))) return c; }
   }
-  const sx=best[0],tx=best[best.length-1],pen=best[best.length-2];
-  const ang=Math.atan2(tx.y-pen.y,tx.x-pen.x);
-  const res={ax:sx.x,ay:sx.y,bx:tx.x,by:tx.y,path:best,cost:bestC,ang};
-  cache.set(key,res);return res;
+  return v;
+}
+function ports(n) {
+  return { E: { x: n.x + n.w, y: cy(n), dx: 1, dy: 0 }, W: { x: n.x, y: cy(n), dx: -1, dy: 0 }, S: { x: cx(n), y: n.y + n.h, dx: 0, dy: 1 }, N: { x: cx(n), y: n.y, dx: 0, dy: -1 } };
+}
+// Join two oriented ports with ≤2 bends; gutter snapped to a free channel.
+function join(p, q, o, hint = 0) {
+  const s0 = { x: p.x + p.dx * STUB, y: p.y + p.dy * STUB }, s1 = { x: q.x + q.dx * STUB, y: q.y + q.dy * STUB };
+  if (p.dx !== 0 && q.dx !== 0) { const gx = freeCh((s0.x + s1.x) / 2 + hint, s0.y, s1.y, true, o); return [p, s0, { x: gx, y: s0.y }, { x: gx, y: s1.y }, s1, q]; }
+  if (p.dx === 0 && q.dx === 0) { const gy = freeCh((s0.y + s1.y) / 2 + hint, s0.x, s1.x, false, o); return [p, s0, { x: s0.x, y: gy }, { x: s1.x, y: gy }, s1, q]; }
+  const e1 = [p, s0, { x: s1.x, y: s0.y }, s1, q], e2 = [p, s0, { x: s0.x, y: s1.y }, s1, q];
+  return cost(e1, o) <= cost(e2, o) ? e1 : e2;
+}
+// Bottom highway fallback: both ends drop from S ports to a per-edge lane.
+function highway(a, b, o, idx) {
+  const P = ports(a), Q = ports(b);
+  const s0 = { x: P.S.x, y: P.S.y + STUB }, s1 = { x: Q.S.x, y: Q.S.y + STUB };
+  const lane = Math.max(...GROUPS.map(g => g.y + g.h)) + 22 + (idx % 4) * 14;
+  const x0 = freeCh(s0.x, s0.y, lane, true, o), x1 = freeCh(s1.x, s1.y, lane, true, o);
+  return [P.S, s0, { x: x0, y: s0.y }, { x: x0, y: lane }, { x: x1, y: lane }, { x: x1, y: s1.y }, s1, Q.S];
+}
+function cost(path, o) {
+  let h = 0, len = 0;
+  for (let i = 0; i < path.length - 1; i++) {
+    const p = path[i], q = path[i + 1];
+    const r = Math.abs(p.x - q.x) < .5 ? hitV(p.x, p.y, q.y, o) : hitH(p.y, p.x, q.x, o);
+    if (r) h += r.wgt;
+    len += Math.abs(q.x - p.x) + Math.abs(q.y - p.y);
+  }
+  return h * 400 + (path.length - 2) * 12 + len * 0.05;
+}
+// Drop duplicate + collinear points so corners are evenly spaced for round joins.
+function clean(pts) {
+  const d = [];
+  for (const p of pts) { const l = d[d.length - 1]; if (!l || Math.abs(p.x - l.x) > .5 || Math.abs(p.y - l.y) > .5) d.push({ x: Math.round(p.x * 2) / 2, y: Math.round(p.y * 2) / 2 }); }
+  const c = [d[0]];
+  for (let i = 1; i < d.length - 1; i++) {
+    const a = c[c.length - 1], b = d[i], e = d[i + 1];
+    if ((Math.abs(a.x - b.x) < .5 && Math.abs(b.x - e.x) < .5) || (Math.abs(a.y - b.y) < .5 && Math.abs(b.y - e.y) < .5)) continue;
+    c.push(b);
+  }
+  c.push(d[d.length - 1]);
+  return c;
+}
+export function getRoute(a, b, ax, ay, bx, by) {
+  const key = `${a.id}->${b.id}|${a.x},${a.y},${b.x},${b.y}`;
+  if (cache.has(key)) return cache.get(key);
+  const ga = grp(a), gb = grp(b);
+  if (!ga || !gb) { const f = [{ x: ax, y: ay }, { x: bx, y: by }]; const r = { path: f, cost: 999, ang: Math.atan2(by - ay, bx - ax), ax, ay, bx, by }; cache.set(key, r); return r; }
+  const P = ports(a), Q = ports(b), o = obstacles(a, b);
+  const idx = EDGE_IDX.get(a.id + '>' + b.id) ?? 0;
+  const dx = cx(b) - cx(a), dy = cy(b) - cy(a);
+  let cands;
+  if (ga.id === gb.id) cands = [join(P.E, Q.E, o, (idx % 4) * 10), highway(a, b, o, idx)];
+  else if (Math.abs(dx) > Math.abs(dy)) cands = dx > 0 ? [join(P.E, Q.W, o), join(P.E, Q.E, o, 14), highway(a, b, o, idx)] : [join(P.W, Q.E, o), join(P.W, Q.W, o, -14), highway(a, b, o, idx)];
+  else cands = dy > 0 ? [join(P.S, Q.N, o), join(dx >= 0 ? P.E : P.W, dx >= 0 ? Q.W : Q.E, o), highway(a, b, o, idx)] : [join(P.N, Q.S, o), join(dx >= 0 ? P.E : P.W, dx >= 0 ? Q.W : Q.E, o), highway(a, b, o, idx)];
+  let best = cands[0], bc = Infinity;
+  for (const p of cands) { const c = cost(p, o); if (c < bc) { bc = c; best = p; } }
+  const path = clean(best);
+  const s = path[0], t = path[path.length - 1], pen = path[path.length - 2];
+  const res = { ax: s.x, ay: s.y, bx: t.x, by: t.y, path, cost: bc, ang: Math.atan2(t.y - pen.y, t.x - pen.x) };
+  cache.set(key, res);
+  return res;
 }

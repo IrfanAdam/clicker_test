@@ -1,10 +1,10 @@
-import { NODES, KINDS, GROUPS } from './graphData.js';
-import { token, drawGroups, drawGrid, drawEdges, drawNodes } from './render.js';
+import { NODES, KINDS, GROUPS, EDGES } from './graphData.js';
+import { token, drawGroups, drawGrid, drawEdges, drawNodes, edgePath } from './render.js';
 import { clearRouteCache } from './route.js';
 const RH=18,RG=3,HH=32,PY=4,PX=3;
 export function createMechanicsCanvas(canvas, tooltip){
   const ctx=canvas.getContext('2d');
-  let W=0,H=0,dpr=1,scale=1,ox=0,oy=0,dragGroup=null,dragNode=null,pan=null,hover=null,hoverGroup=null,selected=null,anim=null;
+  let W=0,H=0,dpr=1,scale=1,ox=0,oy=0,dragGroup=null,dragNode=null,pan=null,hover=null,hoverGroup=null,selected=null,anim=null,hovEdge=null,selEdge=null,downX=0,downY=0,moved=false;
   function getBB(){ let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
     GROUPS.forEach(g=>{ minX=Math.min(minX,g.x);minY=Math.min(minY,g.y);maxX=Math.max(maxX,g.x+g.w);maxY=Math.max(maxY,g.y+g.h);});
     NODES.forEach(n=>{ minX=Math.min(minX,n.x);minY=Math.min(minY,n.y);maxX=Math.max(maxX,n.x+n.w);maxY=Math.max(maxY,n.y+n.h);});
@@ -40,48 +40,62 @@ export function createMechanicsCanvas(canvas, tooltip){
       ctx.clearRect(0,0,W,H); ctx.fillStyle=token('--stone-100'); ctx.fillRect(0,0,W,H);
       ctx.save(); ctx.translate(ox,oy); ctx.scale(scale,scale);
       drawGroups(ctx,scale,hoverGroup,selected); drawGrid(ctx,ox,oy,scale,W,H);
-      drawEdges(ctx,scale,hover,selected); drawNodes(ctx,scale,hover,selected);
+      drawEdges(ctx,scale,hover,selected,hovEdge,selEdge); drawNodes(ctx,scale,hover,selected,selEdge);
       ctx.restore();
     });
   }
   function tip(n){
     if(!n){ tooltip.hidden=true; return; } tooltip.hidden=false;
-    tooltip.innerHTML=`<strong>${n.label}</strong><span style="margin-top:4px;line-height:1.4">${n.desc}</span><em>${n.file} · ${KINDS[n.kind]?.label||n.kind} · ${n.sub}</em>`;
+    tooltip.innerHTML=`<strong>${n.label}</strong><span style="margin-top:var(--space-2);line-height:var(--leading-normal)">${n.desc}</span><em>${n.file} · ${KINDS[n.kind]?.label||n.kind} · ${n.sub}</em>`;
     let x=(n.x*scale+ox)+n.w*scale+10, y=(n.y*scale+oy); const tw=280;
     if(x+tw>W-12) x=(n.x*scale+ox)-tw-10; if(y+110>H-12) y=H-122; if(y<8) y=8; if(x<8) x=8;
+    tooltip.style.left=x+'px'; tooltip.style.top=y+'px';
+  }
+  function distSeg(p,a,b){ const dx=b.x-a.x,dy=b.y-a.y,L=dx*dx+dy*dy; let t=L?((p.x-a.x)*dx+(p.y-a.y)*dy)/L:0; t=Math.max(0,Math.min(1,t)); return Math.hypot(p.x-(a.x+t*dx),p.y-(a.y+t*dy)); }
+  function hitEdge(p){ const tol=Math.max(5/scale,1.6); let best=null,bd=tol; for(const e of EDGES){ const r=edgePath(e); if(!r) continue; const pts=r.path; for(let i=0;i<pts.length-1;i++){ const d=distSeg(p,pts[i],pts[i+1]); if(d<bd){ bd=d; best=e; } } } return best; }
+  function tipEdge(e){
+    const a=NODES.find(n=>n.id===e.from), b=NODES.find(n=>n.id===e.to); if(!a||!b){ tooltip.hidden=true; return; }
+    tooltip.hidden=false;
+    tooltip.innerHTML=`<strong>${a.label} → ${b.label}</strong><span style="margin-top:var(--space-2);line-height:var(--leading-normal)">${e.label||KINDS[e.kind]?.label||e.kind}</span><em>${e.kind} · ${a.file} → ${b.file}</em>`;
+    const r=edgePath(e); const mid=r?r.path[Math.floor(r.path.length/2)]:{x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+    let x=(mid.x*scale+ox)+12, y=(mid.y*scale+oy)-20; const tw=280;
+    if(x+tw>W-12) x=(mid.x*scale+ox)-tw-12; if(y+110>H-12) y=H-122; if(y<8) y=8; if(x<8) x=8;
     tooltip.style.left=x+'px'; tooltip.style.top=y+'px';
   }
   canvas.addEventListener('pointermove',e=>{
     const p=world(e);
     if(dragGroup){
+      moved=true;
       const dx=p.x-dragGroup.offX, dy=p.y-dragGroup.offY;
       dragGroup.g.x=dragGroup.sx+dx; dragGroup.g.y=dragGroup.sy+dy;
       dragGroup.members.forEach(m=>{ m.n.x=m.sx+dx; m.n.y=m.sy+dy; });
       clearRouteCache(); draw(); return;
     }
-    if(dragNode){ reorderNode(dragNode,p.y); draw(); tip(dragNode); return; }
-    if(pan){ ox=e.clientX-pan.sx; oy=e.clientY-pan.sy; draw(); return; }
+    if(dragNode){ moved=true; reorderNode(dragNode,p.y); draw(); tip(dragNode); return; }
+    if(pan){ if(Math.hypot(e.clientX-downX,e.clientY-downY)>5) moved=true; ox=e.clientX-pan.sx; oy=e.clientY-pan.sy; draw(); return; }
     const hg=hitGroup(p), h=hitNode(p);
+    const he=h?null:hitEdge(p);
     const hgChanged=hg!==hoverGroup; hoverGroup=hg;
-    if(h!==hover || hgChanged){ hover=h; canvas.style.cursor= hg? 'grab' : h? 'ns-resize':'grab'; draw(); }
+    if(h!==hover || he!==hovEdge || hgChanged){ hover=h; hovEdge=he; canvas.style.cursor= hg? 'grab' : h? 'ns-resize' : he? 'pointer':'grab'; draw(); }
     if(h) tip(h); else tooltip.hidden=true;
   });
   canvas.addEventListener('pointerdown',e=>{
+    downX=e.clientX; downY=e.clientY; moved=false;
     const p=world(e), hg=hitGroup(p);
     if(hg){
-      selected=null;
+      selected=null; selEdge=null;
       const members=NODES.filter(n=>n.group===hg.id).map(n=>({n,sx:n.x,sy:n.y}));
       dragGroup={g:hg,sx:hg.x,sy:hg.y,offX:p.x,offY:p.y,members};
       canvas.setPointerCapture(e.pointerId); draw(); return;
     }
     const h=hitNode(p);
-    if(h){ selected=h; dragNode=h; canvas.setPointerCapture(e.pointerId); draw(); tip(h); return; }
+    if(h){ selected=h; selEdge=null; dragNode=h; canvas.setPointerCapture(e.pointerId); draw(); tip(h); return; }
     pan={sx:e.clientX-ox,sy:e.clientY-oy}; canvas.setPointerCapture(e.pointerId);
   });
   canvas.addEventListener('pointerup',e=>{
     if(dragGroup && dragGroup.g){
-      const moved=Math.hypot(dragGroup.g.x-dragGroup.sx, dragGroup.g.y-dragGroup.sy);
-      if(moved<2) selected=null;
+      const movedGrp=Math.hypot(dragGroup.g.x-dragGroup.sx, dragGroup.g.y-dragGroup.sy);
+      if(movedGrp<2){ selected=null; selEdge=null; }
     }
     dragNode=null; dragGroup=null; pan=null; try{canvas.releasePointerCapture(e.pointerId);}catch{}
     draw();
@@ -104,9 +118,11 @@ export function createMechanicsCanvas(canvas, tooltip){
   canvas.addEventListener('click',e=>{
     const p=world(e);
     if(hitGroup(p)) return;
-    const h=hitNode(p); if(h){ selected=h; draw(); tip(h); } else if(!pan&&!dragNode&&!dragGroup){ selected=null; draw(); tooltip.hidden=true; }
+    const h=hitNode(p); if(h){ selected=h; selEdge=null; hovEdge=null; draw(); tip(h); }
+    else { const he=hitEdge(p); if(he && !moved){ selEdge=he; selected=null; draw(); tipEdge(he); } else if(!pan&&!dragNode&&!dragGroup){ selected=null; selEdge=null; draw(); tooltip.hidden=true; } }
+    moved=false;
   });
-  canvas.addEventListener('pointerleave',()=>{ hover=null; hoverGroup=null; tooltip.hidden=true; draw(); });
+  canvas.addEventListener('pointerleave',()=>{ hover=null; hoverGroup=null; hovEdge=null; tooltip.hidden=true; draw(); });
   window.addEventListener('resize',resize); resize();
   return { resize, draw };
 }
