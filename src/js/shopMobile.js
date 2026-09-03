@@ -19,25 +19,10 @@ export function centerPurchasable(container) {
 }
 
 export function setupMobileSwap(container) {
-  const shopArea = document.querySelector('.shop-area');
-  const gameArea = document.getElementById('action-zone');
-  const gameLayout = document.querySelector('.game-layout');
-  const progressWrap = document.querySelector('.progress-wrap');
-  if (!shopArea || !gameArea || !gameLayout) return;
-  let lastMobile = null;
-  const reposition = () => {
-    const isMobile = window.matchMedia('(max-width:768px)').matches;
-    if (isMobile === lastMobile) return;
-    lastMobile = isMobile;
-    if (isMobile) {
-      if (shopArea.parentElement !== gameArea) {
-        if (progressWrap?.parentElement === gameArea) progressWrap.after(shopArea);
-        else gameArea.prepend(shopArea);
-      }
-    } else if (shopArea.parentElement !== gameLayout) gameLayout.appendChild(shopArea);
-    setTimeout(() => centerPurchasable(container), 80);
-  };
-  reposition();
-  window.matchMedia('(max-width:768px)').addEventListener('change', reposition);
-  document.addEventListener('score:changed', () => centerPurchasable(container));
+  // Shop stays as its own separate container (sibling to game-area in .game-layout).
+  // No DOM reparenting — only auto-scroll to the cheapest purchasable item on mobile.
+  const center = () => centerPurchasable(container);
+  center();
+  window.matchMedia('(max-width:768px)').addEventListener('change', () => setTimeout(center, 80));
+  document.addEventListener('score:changed', center);
 }

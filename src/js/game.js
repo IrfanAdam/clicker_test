@@ -2,6 +2,7 @@ import { state, GOAL, addScore, resetGoal } from './state.js';
 import { refreshShop } from './shop.js';
 import { renderStatStrip } from './illustrations/statStrip.js';
 import { play, unlock } from './audio/audioManager.js';
+import { celebrate, hideCelebration } from './celebrate.js';
 
 let scoreEl, statusEl, btn, replayBtn, clickTimer = null;
 
@@ -43,15 +44,13 @@ function handleClick() {
 
 function onGoalReached() {
   unlock();
-  play('score', { pitch: 8 });
-  if (statusEl) statusEl.textContent = 'Goal achieved! 🎉 — Press Replay';
-  if (btn) { btn.disabled = true; btn.style.opacity = getComputedStyle(document.documentElement).getPropertyValue('--opacity-hover-pill').trim() || '.55'; btn.style.pointerEvents = 'none'; }
-  if (replayBtn) replayBtn.hidden = false;
-  spawnConfettiBurst();
+  celebrate({ scoreEl, statusEl, btn, replayBtn });
 }
 
 function handleReplay() {
+  hideCelebration();
   resetGoal();
+  if (scoreEl) scoreEl.classList.remove('is-goal');
   if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.pointerEvents = ''; }
   if (replayBtn) replayBtn.hidden = true;
   if (statusEl) statusEl.textContent = 'Click the button to begin!';

@@ -64,6 +64,7 @@
   box-shadow:var(--shadow-illus);
   transition:transform var(--duration-normal) var(--ease-default),background var(--duration-normal) var(--ease-default),box-shadow var(--duration-normal) var(--ease-default);
   width:clamp(var(--size-button-min),85%,var(--size-button-max));
+  align-self:center;
 }
 #click-button:hover{transform:translateY(calc(var(--space-1) * -1));background:var(--stone-800);box-shadow:0 var(--space-4) var(--space-10) color-mix(in srgb,var(--stone-900) 14%,transparent)}
 #click-button:active{transform:scale(.98);background:var(--stone-900);box-shadow:var(--shadow-sm)}
@@ -73,7 +74,7 @@
 .progress-fill{height:100%;width:0%;background:var(--stone-900);border-radius:var(--radius-pill);transition:width var(--duration-slow) var(--ease-out)}
 .progress-wrap.is-complete .progress-fill{background:var(--emerald-600)}
 .progress-meta{display:flex;justify-content:space-between;font-size:var(--text-caption);color:var(--color-muted);letter-spacing:var(--tracking-wide)}
-.replay-button{font-family:var(--font-body);font-size:var(--text-body-sm);font-weight:var(--font-weight-semi);color:var(--stone-900);background:var(--color-card);border:var(--border-sm) solid var(--color-border);border-radius:var(--radius-pill);padding:var(--space-4) var(--space-9);cursor:pointer}
+.replay-button{font-family:var(--font-body);font-size:var(--text-body-sm);font-weight:var(--font-weight-semi);color:var(--stone-900);background:var(--color-card);border:var(--border-sm) solid var(--color-border);border-radius:var(--radius-pill);padding:var(--space-4) var(--space-9);cursor:pointer;align-self:center}
 .replay-button:hover{background:var(--surface-raised)}
 .confetti-piece,.click-particle{position:fixed;pointer-events:none;z-index:var(--z-particle);font-weight:var(--font-weight-bold)}
 #particle-container{position:absolute;inset:0;pointer-events:none}

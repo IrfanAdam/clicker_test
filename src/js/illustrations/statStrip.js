@@ -24,6 +24,6 @@ export function renderStatStrip(){
       <span class="illus-blob-bg"></span>
       <span class="stat-label">${c.label}</span>
       <span class="stat-value">${c.value}</span>
-      <span class="stat-icon-wrap">${icon(c.icon,{size:34})}</span>
+      <span class="stat-icon-wrap">${icon(c.icon,{size:24})}</span>
     </div>`).join('');
 }

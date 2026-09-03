@@ -1,0 +1,123 @@
+/* Celebration ceremony — overlay, shake, glow — tokens only */
+.celebration-overlay{
+  position:fixed; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  padding:var(--space-16);
+  background:color-mix(in srgb, var(--stone-900) 32%, transparent);
+  backdrop-filter:blur(var(--blur-md));
+  -webkit-backdrop-filter:blur(var(--blur-md));
+  z-index:var(--z-confetti);
+  opacity:0; pointer-events:none;
+  transition:opacity var(--duration-slow) var(--ease-out);
+  will-change:opacity;
+}
+.celebration-overlay.is-open{
+  opacity:1; pointer-events:auto;
+}
+.celebration-card{
+  background:var(--color-card);
+  border:var(--border-sm) solid var(--color-border);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-md), 0 20px 60px color-mix(in srgb, var(--stone-900) 18%, transparent);
+  padding:var(--space-16) var(--space-20);
+  max-width:420px; width:100%;
+  text-align:center;
+  transform:translateY(var(--space-6)) scale(.96);
+  opacity:0;
+  transition:transform var(--duration-slow) var(--ease-spring), opacity var(--duration-slow) var(--ease-out);
+}
+.celebration-overlay.is-open .celebration-card{
+  transform:translateY(0) scale(1);
+  opacity:1;
+}
+.celebration-badge{
+  display:inline-flex; align-items:center; gap:var(--space-3);
+  font-family:var(--font-body); font-size:var(--text-caption);
+  font-weight:var(--font-weight-bold); letter-spacing:var(--tracking-widest);
+  text-transform:uppercase; color:var(--emerald-700);
+  background:var(--emerald-50); border:var(--border-sm) solid var(--emerald-100);
+  padding:var(--space-2) var(--space-6); border-radius:var(--radius-pill);
+  margin-bottom:var(--space-6);
+}
+.celebration-title{
+  margin:0; font-family:var(--font-display);
+  font-size:var(--text-title); font-weight:var(--font-weight-extrabold);
+  line-height:var(--leading-tight); letter-spacing:var(--tracking-tighter);
+  color:var(--color-text);
+}
+.celebration-title span{
+  background:linear-gradient(90deg, var(--amber-700), var(--rose-600), var(--violet-600));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.celebration-sub{
+  margin:var(--space-6) 0 0;
+  font-family:var(--font-body); font-size:var(--text-body-sm);
+  color:var(--color-muted); line-height:var(--leading-relaxed);
+}
+.celebration-actions{
+  display:flex; gap:var(--space-6); justify-content:center; margin-top:var(--space-12);
+}
+.celebration-actions button{
+  font-family:var(--font-body); font-size:var(--text-body-sm);
+  font-weight:var(--font-weight-semi); padding:var(--space-6) var(--space-12);
+  border-radius:var(--radius-pill); cursor:pointer;
+  border:var(--border-sm) solid var(--color-border);
+  transition:transform var(--duration-fast) var(--ease-default), background var(--duration-fast) var(--ease-default);
+}
+.celebration-again{
+  background:var(--stone-900); color:var(--color-text-inverse); border-color:var(--stone-900);
+}
+.celebration-again:hover{ background:var(--stone-800); transform:translateY(-1px); }
+.celebration-again:active{ transform:scale(.98); }
+.celebration-close{
+  background:var(--color-card); color:var(--color-text-secondary);
+}
+.celebration-close:hover{ background:var(--surface-raised); }
+
+/* Game area celebration state */
+.game-area.is-celebrating{
+  animation:goalPop .65s var(--ease-spring);
+}
+.game-area.is-celebrating #score-value{
+  animation:scoreShine 1.1s var(--ease-out) .15s both;
+}
+.game-area.is-celebrating .progress-fill{
+  box-shadow:0 0 0 4px color-mix(in srgb, var(--emerald-600) 22%, transparent);
+  animation:progressGlow 1.2s var(--ease-out) both;
+}
+#score-value.is-goal{
+  color:var(--emerald-700);
+}
+
+/* Screen shake */
+@keyframes goalShake{
+  0%,100%{ transform:translateX(0) }
+  20%{ transform:translateX(-2px) }
+  40%{ transform:translateX(2px) }
+  60%{ transform:translateX(-1px) }
+  80%{ transform:translateX(1px) }
+}
+.shake{ animation:goalShake .38s var(--ease-default); }
+
+@keyframes goalPop{
+  0%{ transform:scale(1) }
+  28%{ transform:scale(1.015) }
+  100%{ transform:scale(1) }
+}
+@keyframes scoreShine{
+  0%{ transform:scale(1); filter:brightness(1) }
+  30%{ transform:scale(1.08); filter:brightness(1.08) }
+  100%{ transform:scale(1); filter:brightness(1) }
+}
+@keyframes progressGlow{
+  0%{ filter:brightness(1) }
+  35%{ filter:brightness(1.2) }
+  100%{ filter:brightness(1) }
+}
+@media (prefers-reduced-motion: reduce){
+  .celebration-overlay,.celebration-card,.game-area.is-celebrating{ animation:none !important; transition:none !important; }
+  .shake{ animation:none !important; }
+}
+@media (max-width:768px){
+  .celebration-overlay{ backdrop-filter:none; -webkit-backdrop-filter:none; background:color-mix(in srgb, var(--stone-900) 44%, transparent); }
+}

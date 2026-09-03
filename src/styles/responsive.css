@@ -7,10 +7,10 @@
   .app-header{padding:var(--space-7) var(--space-9)}
   .game-layout{display:flex;flex-direction:column;gap:var(--space-8);max-width:100%}
   .game-area{display:flex;flex-direction:column;min-height:auto;padding:var(--space-14) var(--space-9);overflow:visible;max-width:100%;box-sizing:border-box}
-  .game-area .stat-strip{order:10;display:flex;gap:var(--space-4);overflow-x:auto;overflow-y:hidden;scrollbar-width:none;margin-top:var(--space-8);padding-bottom:var(--space-2);max-width:100%}
-  .game-area .stat-strip::-webkit-scrollbar{display:none}
-  .game-area .stat-strip .stat-card{flex:1 0 22%;min-width:var(--size-dot);min-height:var(--size-card-compact);padding:var(--space-5) var(--space-4);scroll-snap-align:start}
-  .shop-area{order:-1;position:static;transform:none;max-height:none;box-shadow:var(--shadow-md);border-radius:var(--radius-lg);padding:var(--space-6);width:100%;max-width:100%;box-sizing:border-box;overflow:visible}
+  .game-area .stat-strip{order:10;display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-3);overflow:visible;margin-top:var(--space-8);padding-bottom:0;max-width:100%}
+  .game-area .stat-strip .stat-card{flex:none;min-width:0;min-height:var(--size-card-compact);padding:var(--space-5) var(--space-4);scroll-snap-align:unset}
+  .shop-area{order:-1;position:static;transform:none;max-height:none;width:100%;max-width:100%;box-sizing:border-box;overflow:visible;background:transparent;border:none;box-shadow:none;padding:0;border-radius:0}
+  .shop-area .shop-header{padding:var(--space-2) var(--space-2) var(--space-3)}
   #shop-items{display:flex;flex-direction:row;gap:var(--space-6);overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:var(--space-2) var(--space-1) var(--space-4);width:100%;max-width:100%;box-sizing:border-box}
   #shop-items::-webkit-scrollbar{display:none}
   .shop-area .shop-item{flex:0 0 78%;scroll-snap-align:center;min-height:var(--size-card-shop)}
@@ -22,6 +22,6 @@
   .app-header{flex-direction:column;text-align:center}
   .app-header nav ul{gap:var(--space-6)}
   #click-button{padding:var(--space-8) var(--space-12);width:92%}
-  .shop-area{padding:var(--space-6)}
+  .shop-area{padding:0}
   .shop-area .shop-item{flex:0 0 82%}
 }

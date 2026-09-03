@@ -28,7 +28,18 @@ export function playSound(ctx, name, { pitch = 0, volume = 0.7 } = {}) {
       break;
     }
     case 'celebrate': {
-      chord(ctx, [523.25, 659.25, 783.99, 1046.5], { type: 'sine', duration: 0.28, gain: 0.16 * v, gap: 75 });
+      // Act 1 — rising hero chord C5 E5 G5 C6
+      chord(ctx, [523.25, 659.25, 783.99, 1046.5], { type: 'triangle', duration: 0.32, gain: 0.18 * v, gap: 55 });
+      // Act 2 — higher sparkle C6 E6 G6 after 220ms
+      setTimeout(() => chord(ctx, [1046.5, 1318.5, 1567.9], { type: 'sine', duration: 0.4, gain: 0.15 * v, gap: 45 }), 220);
+      // Act 3 — warm bass resolve C4 + C5 with shimmer
+      setTimeout(() => {
+        tone(ctx, { freq: 130.81, type: 'triangle', duration: 0.7, gain: 0.19 * v, slideTo: 65 });
+        tone(ctx, { freq: 523.25, type: 'sine', duration: 0.55, gain: 0.1 * v });
+      }, 380);
+      // Shimmer layer — quick octave ping
+      setTimeout(() => tone(ctx, { freq: 2093, type: 'sine', duration: 0.18, gain: 0.07 * v }), 300);
+      setTimeout(() => tone(ctx, { freq: 2637, type: 'sine', duration: 0.2, gain: 0.06 * v }), 520);
       break;
     }
     case 'tick': {
