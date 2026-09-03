@@ -1,21 +1,20 @@
-/* Illustration primitives — sticker/flat style */
+/* Illustration primitives — sticker/flat style — tokens only */
 .illus-card{position:relative;overflow:hidden;border:var(--illus-outline-w) solid var(--illus-outline);border-radius:var(--radius-illus);background:var(--color-card);box-shadow:var(--shadow-illus)}
-.illus-blob-bg{position:absolute;inset:auto -14% -22% auto;width:58%;height:74%;background:var(--illus-blob);border-radius:50% 40% 60% 50%/50% 60% 40% 50%;opacity:.78;pointer-events:none}
-.illus-icon{width:44px;height:44px;display:block;stroke:var(--illus-outline);stroke-width:1.5;vector-effect:non-scaling-stroke}
-.illus-dashed{border-left:1.5px dashed var(--illus-dashed)}
-/* Stat strip */
-.stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
-.stat-card{padding:12px 48px 12px 14px;min-height:88px;display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;gap:4px;transition:border-color .2s,transform .2s}
-.stat-card .stat-label{font-size:.68rem;font-weight:var(--font-weight-semi);letter-spacing:var(--tracking-wider);text-transform:uppercase;color:var(--color-text-secondary);line-height:1.1}
-.stat-card .stat-value{font-family:var(--font-display);font-weight:var(--font-weight-extrabold);font-size:.92rem;line-height:var(--leading-tight);letter-spacing:var(--tracking-tight);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--color-text)}
-.stat-card .stat-icon-wrap{position:absolute;right:8px;bottom:6px;width:32px;height:32px;opacity:.92;pointer-events:none}
-
+.illus-blob-bg{position:absolute;inset:auto -14% -22% auto;width:58%;height:74%;background:var(--illus-blob);border-radius:50% 40% 60% 50%/50% 60% 40% 50%;opacity:var(--opacity-soft);pointer-events:none}
+.illus-icon{width:var(--size-icon-sm);height:var(--size-icon-sm);display:block;stroke:var(--illus-outline);stroke-width:var(--border-md);vector-effect:non-scaling-stroke}
+.illus-dashed{border-left:var(--border-md) dashed var(--illus-dashed)}
+/* Stat strip — typography via tokens */
+.stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-6);margin-bottom:var(--space-8)}
+.stat-card{padding:var(--space-6) var(--space-24) var(--space-6) var(--space-7);min-height:var(--size-card-stat);display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;gap:var(--space-2);transition:border-color var(--duration-base) var(--ease-default),transform var(--duration-base) var(--ease-default)}
+.stat-card .stat-label{font-size:var(--text-micro);font-weight:var(--font-weight-semi);letter-spacing:var(--tracking-wider);text-transform:uppercase;color:var(--color-text-secondary);line-height:var(--leading-tight)}
+.stat-card .stat-value{font-family:var(--font-display);font-weight:var(--font-weight-extrabold);font-size:var(--text-stat);line-height:var(--leading-tight);letter-spacing:var(--tracking-tight);margin-top:var(--space-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--color-text)}
+.stat-card .stat-icon-wrap{position:absolute;right:var(--space-4);bottom:var(--space-3);width:var(--size-icon-xs);height:var(--size-icon-xs);opacity:var(--opacity-muted);pointer-events:none}
 /* Shop icon wrap */
-.shop-icon-wrap{position:relative;overflow:hidden;flex-shrink:0;width:48px;height:48px;border-radius:10px;border:var(--illus-outline-w) solid var(--illus-outline);display:grid;place-items:center;background:var(--illus-blob)}
+.shop-icon-wrap{position:relative;overflow:hidden;flex-shrink:0;width:var(--size-icon-md);height:var(--size-icon-md);border-radius:var(--radius-base);border:var(--illus-outline-w) solid var(--illus-outline);display:grid;place-items:center;background:var(--illus-blob)}
 .shop-icon-wrap .illus-blob-sm{position:absolute;inset:auto -20% -20% auto;width:70%;height:70%;background:color-mix(in srgb,var(--color-card) 55%,transparent);border-radius:50%;pointer-events:none}
 /* Mascot + peekers */
-.mascot{flex-shrink:0;filter:drop-shadow(0 4px 10px color-mix(in srgb,var(--stone-900) 10%,transparent))}
-.mascot-bubble{display:flex;align-items:center;gap:10px;background:var(--illus-blob);border:var(--illus-outline-w) solid var(--illus-outline);border-radius:999px;padding:8px 14px;font-weight:600;font-size:var(--text-body-sm)}
-.peek{position:absolute;top:-10px;right:14px;width:56px;pointer-events:none;z-index:2}
-@media(max-width:768px){.peek{display:none}.game-area .stat-strip{order:10;display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;margin-top:16px;padding-bottom:4px}.game-area .stat-strip::-webkit-scrollbar{display:none}.game-area .stat-strip .stat-card{flex:1 0 22%;min-width:72px;min-height:64px;padding:10px 8px;scroll-snap-align:start}}
-@media(max-width:480px){.stat-strip{gap:8px}.game-area .stat-strip .stat-card{flex:0 0 22%;min-height:64px;padding:10px 8px}.illus-icon{width:32px;height:32px}}
+.mascot{flex-shrink:0;filter:drop-shadow(0 var(--space-2) var(--space-5) color-mix(in srgb,var(--stone-900) 10%,transparent))}
+.mascot-bubble{display:flex;align-items:center;gap:var(--space-5);background:var(--illus-blob);border:var(--illus-outline-w) solid var(--illus-outline);border-radius:var(--radius-pill);padding:var(--space-4) var(--space-7);font-weight:var(--font-weight-semi);font-size:var(--text-body-sm)}
+.peek{position:absolute;top:calc(var(--space-5) * -1);right:var(--space-7);width:var(--size-icon-lg);pointer-events:none;z-index:var(--z-card)}
+@media(max-width:768px){.peek{display:none}.game-area .stat-strip{order:10;display:flex;gap:var(--space-4);overflow-x:auto;overflow-y:hidden;scrollbar-width:none;margin-top:var(--space-8);padding-bottom:var(--space-2)}.game-area .stat-strip::-webkit-scrollbar{display:none}.game-area .stat-strip .stat-card{flex:1 0 22%;min-width:var(--size-dot);min-height:var(--size-card-compact);padding:var(--space-5) var(--space-4);scroll-snap-align:start}}
+@media(max-width:480px){.stat-strip{gap:var(--space-4)}.game-area .stat-strip .stat-card{flex:0 0 22%;min-height:var(--size-card-compact);padding:var(--space-5) var(--space-4)}.illus-icon{width:var(--size-icon-xs);height:var(--size-icon-xs)}}

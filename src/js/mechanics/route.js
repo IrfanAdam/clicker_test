@@ -1,4 +1,5 @@
 import { NODES, GROUPS, EDGES } from './graphData.js';
+import { violatesCorridor } from './corridor.js';
 const cache = new Map();
 export function clearRouteCache() { cache.clear(); }
 const BY_ID = new Map(GROUPS.map(g => [g.id, g]));
@@ -80,8 +81,12 @@ export function getRoute(a, b, ax, ay, bx, by) {
   let cands;
   if (ga.id === gb.id) cands = [join(P.E, Q.E, o, (idx % 4) * 10), highway(a, b, o, idx)];
   else if (Math.abs(dx) > Math.abs(dy)) cands = dx > 0 ? [join(P.E, Q.W, o), join(P.E, Q.E, o, 14), highway(a, b, o, idx)] : [join(P.W, Q.E, o), join(P.W, Q.W, o, -14), highway(a, b, o, idx)];
-  else cands = dy > 0 ? [join(P.S, Q.N, o), join(dx >= 0 ? P.E : P.W, dx >= 0 ? Q.W : Q.E, o), highway(a, b, o, idx)] : [join(P.N, Q.S, o), join(dx >= 0 ? P.E : P.W, dx >= 0 ? Q.W : Q.E, o), highway(a, b, o, idx)];
+  else cands = dy > 0 ? [join(P.S, Q.N, o), join(dx >= 0 ? P.E : P.W, dx >= 0 ? Q.W : Q.E, o), join(P.E, Q.E, o, 18), join(P.W, Q.W, o, -18), highway(a, b, o, idx)] : [join(P.N, Q.S, o), join(dx >= 0 ? P.E : P.W, dx >= 0 ? Q.W : Q.E, o), join(P.E, Q.E, o, 18), join(P.W, Q.W, o, -18), highway(a, b, o, idx)];
   let best = cands[0], bc = Infinity;
+  // Drop candidates that spear through a card to reach a side port;
+  // the survivors route below/around instead. Keep all if none survive.
+  const fair = cands.filter(p => !violatesCorridor(clean(p), a, b));
+  if (fair.length) cands = fair;
   for (const p of cands) { const c = cost(p, o); if (c < bc) { bc = c; best = p; } }
   const path = clean(best);
   const s = path[0], t = path[path.length - 1], pen = path[path.length - 2];

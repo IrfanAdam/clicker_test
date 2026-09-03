@@ -18,6 +18,46 @@ export function fitText(ctx, text, maxWorldW, baseWorld, scale, family, weight){
   }
   return { text: t, font: ctx.font, world };
 }
+// world-proportional variant — font scales with zoom (11 world → 11*scale screen), so box+text keep density
+export function fitTextWorld(ctx, text, maxWorldW, baseWorld, family, weight){
+  let world = baseWorld;
+  ctx.font = `${weight} ${world}px ${family}`;
+  let tw = ctx.measureText(text).width;
+  if(tw > maxWorldW){
+    world = Math.max(6, world * maxWorldW / tw);
+    ctx.font = `${weight} ${world}px ${family}`;
+    tw = ctx.measureText(text).width;
+  }
+  let t = text;
+  while(tw > maxWorldW && t.length > 4){
+    t = t.slice(0,-2) + '…';
+    tw = ctx.measureText(t).width;
+  }
+  return { text: t, font: ctx.font, world };
+}
+// subtle scaling — p=0 constant, p=1 proportional, 0.35-0.45 is gentle (text grows a bit on zoom but never tiny when zoomed out)
+export function fitTextSubtle(ctx, text, maxWorldW, baseWorld, scale, family, weight, p=0.38){
+  const pow = Math.pow(scale, p - 1);
+  let fontWorld = baseWorld * pow;
+  ctx.font = `${weight} ${fontWorld}px ${family}`;
+  let tw = ctx.measureText(text).width;
+  // available check in world units (scale cancels, but fontWorld already encodes p)
+  if(tw > maxWorldW){
+    const ratio = maxWorldW / tw;
+    fontWorld *= ratio;
+    ctx.font = `${weight} ${fontWorld}px ${family}`;
+    tw = ctx.measureText(text).width;
+  }
+  let t = text;
+  while(tw > maxWorldW && t.length > 4){
+    t = t.slice(0,-2) + '…';
+    tw = ctx.measureText(t).width;
+  }
+  return { text: t, font: ctx.font, world: fontWorld };
+}
+export function subtleFont(baseWorld, scale, p=0.38){
+  return baseWorld * Math.pow(scale, p - 1);
+}
 export function wrapText(ctx, text, maxWorldW, baseWorld, scale, family, maxLines){
   const maxScreen = maxWorldW * scale;
   const screen = baseWorld / scale;
@@ -32,13 +72,11 @@ export function wrapText(ctx, text, maxWorldW, baseWorld, scale, family, maxLine
       if(cur) lines.push(cur);
       cur = w;
       if(lines.length >= maxLines) break;
-      // single word too long → truncate
       while(ctx.measureText(cur).width > maxScreen && cur.length > 4) cur = cur.slice(0,-2) + '…';
     }
   }
   if(cur && lines.length < maxLines) lines.push(cur);
   if(lines.length > maxLines) lines.length = maxLines;
-  // ellipsis last line if original overflowed
   const all = words.join(' ');
   if(lines.join(' ').length < all.length && lines.length){
     let last = lines[lines.length-1];

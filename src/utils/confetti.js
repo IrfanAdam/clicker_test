@@ -16,12 +16,13 @@ export function spawnConfetti(x, y) {
     const color = colors[Math.floor(Math.random() * colors.length)];
     let extra = '';
     if (shape < .35) extra = 'border-radius:50%';
-    else if (shape < .6) extra = 'border-radius:2px';
+    else if (shape < .6) extra = `border-radius:var(--space-1)`;
     else if (shape < .85) extra = 'clip-path:polygon(50% 0%,0% 100%,100% 100%)';
-    else extra = `width:${size * 2}px;height:2px;border-radius:999px`;
+    else extra = `width:${size * 2}px;height:2px;border-radius:var(--radius-pill)`;
     const w = shape > .85 ? size * 2 : size;
     const h = shape > .85 ? 2 : size;
-    el.style.cssText = `position:fixed;left:${x}px;top:${y}px;width:${w}px;height:${h}px;background:${color};${extra};opacity:0.95;pointer-events:none;z-index:9999;will-change:transform,opacity;transform:translate3d(0,0,0)`;
+    const zi = getComputedStyle(document.documentElement).getPropertyValue('--z-confetti').trim() || '9999';
+    el.style.cssText = `position:fixed;left:${x}px;top:${y}px;width:${w}px;height:${h}px;background:${color};${extra};opacity:0.95;pointer-events:none;z-index:${zi};will-change:transform,opacity;transform:translate3d(0,0,0)`;
     document.body.appendChild(el);
     const angle = (Math.random() - .5) * Math.PI * 1.15;
     const vel = Math.random() * 6 + 4;
@@ -54,20 +55,24 @@ export function createParticle(x, y, text) {
   const p = document.createElement('div');
   p.className = 'click-particle';
   p.textContent = text;
+  const fs = getComputedStyle(document.documentElement).getPropertyValue('--text-heading').trim() || '1.5rem';
+  const fw = getComputedStyle(document.documentElement).getPropertyValue('--font-weight-bold').trim() || '700';
+  const zi = getComputedStyle(document.documentElement).getPropertyValue('--z-particle').trim() || '9999';
+  const dur = getComputedStyle(document.documentElement).getPropertyValue('--duration-slow').trim() || '.8s';
   Object.assign(p.style, {
     position: 'fixed',
     left: `${x}px`,
     top: `${y}px`,
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
+    fontSize: fs,
+    fontWeight: fw,
     color: 'var(--color-primary)',
     pointerEvents: 'none',
-    zIndex: '9999',
-    transition: 'transform .8s ease-out,opacity .8s ease-out',
+    zIndex: zi,
+    transition: `transform ${dur} var(--ease-out),opacity ${dur} var(--ease-out)`,
   });
   document.body.appendChild(p);
   requestAnimationFrame(() => {
-    p.style.transform = 'translateY(-50px)';
+    p.style.transform = 'translateY(calc((var(--space-24) + var(--space-1)) * -1))';
     p.style.opacity = '0';
   });
   setTimeout(() => p.remove(), 800);

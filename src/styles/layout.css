@@ -1,23 +1,23 @@
-/* Layout — header, grid, footer, app shell */
+/* Layout — header, grid, footer, app shell — tokens only */
 #app{
-  max-width:1200px;
+  max-width:var(--layout-max);
   margin:0 auto;
-  padding:20px;
+  padding:var(--content-pad);
   display:flex;
   flex-direction:column;
-  gap:20px;
+  gap:var(--layout-gap);
   min-height:100vh;
 }
 .app-header{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:16px;
-  padding:16px 24px;
+  gap:var(--layout-gap-sm);
+  padding:var(--space-8) var(--space-12);
   background:var(--color-card);
   border-radius:var(--radius-lg);
   box-shadow:var(--shadow-md);
-  border:1px solid var(--color-border);
+  border:var(--border-sm) solid var(--color-border);
 }
 .app-header h1{
   margin:0;
@@ -31,7 +31,7 @@
 .app-header nav ul{
   list-style:none;
   display:flex;
-  gap:16px;
+  gap:var(--space-8);
   margin:0;
   padding:0;
 }
@@ -43,22 +43,22 @@
   font-weight:var(--font-weight-medium);
   letter-spacing:var(--tracking-wide);
   line-height:var(--leading-normal);
-  transition:color .2s;
-  padding:6px 8px;
-  border-radius:8px;
+  transition:color var(--duration-base) var(--ease-default);
+  padding:var(--space-3) var(--space-4);
+  border-radius:var(--radius-sm);
 }
 .app-header nav a:hover{color:var(--color-primary);background:var(--blue-50)}
 .app-header nav a:focus-visible{outline:none;box-shadow:var(--ring-primary)}
 .game-layout{
   display:grid;
-  grid-template-columns:1fr 360px;
-  gap:20px;
+  grid-template-columns:1fr var(--layout-sidebar);
+  gap:var(--layout-gap);
   flex:1;
   align-items:start;
 }
 .app-footer{
   text-align:center;
-  padding:12px;
+  padding:var(--space-6);
   color:var(--color-muted);
   font-family:var(--font-body);
   font-size:var(--text-caption);

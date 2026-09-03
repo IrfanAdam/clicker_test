@@ -45,7 +45,7 @@ function onGoalReached() {
   unlock();
   play('score', { pitch: 8 });
   if (statusEl) statusEl.textContent = 'Goal achieved! 🎉 — Press Replay';
-  if (btn) { btn.disabled = true; btn.style.opacity = '.55'; btn.style.pointerEvents = 'none'; }
+  if (btn) { btn.disabled = true; btn.style.opacity = getComputedStyle(document.documentElement).getPropertyValue('--opacity-hover-pill').trim() || '.55'; btn.style.pointerEvents = 'none'; }
   if (replayBtn) replayBtn.hidden = false;
   spawnConfettiBurst();
 }
@@ -67,14 +67,17 @@ function spawnParticle(text, color, scale) {
   const el = document.createElement('div');
   el.className = 'float-particle';
   el.textContent = text;
-  el.style.cssText = `position:fixed;left:50%;top:40%;font-size:1.4rem;color:${color};pointer-events:none;z-index:1000;font-weight:800;opacity:0;transform:translate(-50%,-50%) scale(${scale || 1})`;
+  const fs = getComputedStyle(document.documentElement).getPropertyValue('--text-title').trim() || '1.4rem';
+  const fw = getComputedStyle(document.documentElement).getPropertyValue('--font-weight-extrabold').trim() || '800';
+  const zi = getComputedStyle(document.documentElement).getPropertyValue('--z-particle').trim() || '1000';
+  el.style.cssText = `position:fixed;left:50%;top:40%;font-size:${fs};color:${color};pointer-events:none;z-index:${zi};font-weight:${fw};opacity:0;transform:translate(-50%,-50%) scale(${scale || 1})`;
   document.body.appendChild(el);
   requestAnimationFrame(() => { el.className = 'float-particle burst'; });
   setTimeout(() => el.remove(), 800);
 }
 
 function spawnConfettiBurst() {
-  const colors = ['var(--blue-600)', 'var(--amber-600)', 'var(--emerald-600)', 'var(--rose-600)', '#ffcd1a'];
+  const colors = ['var(--blue-600)', 'var(--amber-600)', 'var(--emerald-600)', 'var(--rose-600)', 'var(--color-accent-soft)'];
   for (let i = 0; i < 18; i++) {
     setTimeout(() => spawnParticle('✦', colors[i % colors.length], 1.6), i * 32);
   }

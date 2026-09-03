@@ -1,22 +1,22 @@
-/* Sound toggle — token-compliant */
+/* Sound toggle — tokens only */
 .app-header nav {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-6);
 }
 #sound-toggle {
-  width: 40px;
-  height: 40px;
+  width: var(--size-control);
+  height: var(--size-control);
   border-radius: var(--radius-pill);
-  border: 1px solid var(--color-border);
+  border: var(--border-sm) solid var(--color-border);
   background: var(--color-card);
   color: var(--color-text-secondary);
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
-  font-size: 1.1rem;
-  line-height: 1;
+  transition: background var(--duration-base) var(--ease-default), color var(--duration-base) var(--ease-default), border-color var(--duration-base) var(--ease-default), transform var(--duration-fast) var(--ease-default);
+  font-size: var(--text-sound-icon);
+  line-height: var(--leading-tight);
 }
 #sound-toggle:hover {
   border-color: var(--color-border-hover);
