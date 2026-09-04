@@ -1,7 +1,10 @@
 import { state, getCost } from './state.js';
 import { SHOP_ITEMS } from './shopConfig.js';
 
-export function centerPurchasable(container) {
+let raf = 0;
+let pending = null;
+
+function doCenter(container){
   if (!window.matchMedia('(max-width:768px)').matches) return;
   if (!container) return;
   const els = [...container.querySelectorAll('.shop-item')];
@@ -18,11 +21,23 @@ export function centerPurchasable(container) {
   els[target]?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
 }
 
+export function centerPurchasable(container) {
+  if(!container) return;
+  // skip scheduling entirely on desktop
+  if (!window.matchMedia('(max-width:768px)').matches) return;
+  pending = container;
+  if(raf) return;
+  raf = requestAnimationFrame(()=>{
+    raf = 0;
+    const c = pending; pending = null;
+    doCenter(c);
+  });
+}
+
 export function setupMobileSwap(container) {
-  // Shop stays as its own separate container (sibling to game-area in .game-layout).
-  // No DOM reparenting — only auto-scroll to the cheapest purchasable item on mobile.
-  const center = () => centerPurchasable(container);
+  const center = () => doCenter(container);
+  // initial immediate (not throttled) so shop lands correctly on load
   center();
   window.matchMedia('(max-width:768px)').addEventListener('change', () => setTimeout(center, 80));
-  document.addEventListener('score:changed', center);
+  document.addEventListener('score:changed', ()=> centerPurchasable(container));
 }

@@ -3,6 +3,14 @@ import { fitTextSubtle, subtleFont } from './text.js';
 import { getRoute } from './route.js';
 export function token(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim()||getComputedStyle(document.documentElement).getPropertyValue('--stone-900').trim(); }
 export function kindColor(k){ return token(KINDS[k]?.color || '--stone-500'); }
+let _nodeMap=null, _nodesRef=null;
+function getNode(id){
+  if(_nodesRef!==NODES){
+    _nodeMap=new Map(NODES.map(n=>[n.id,n]));
+    _nodesRef=NODES;
+  }
+  return _nodeMap.get(id);
+}
 export function drawRound(c,x,y,w,h,r){ c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath(); }
 
 const EDGE_STYLES={ call:{color:'--stone-500',dash:[],w:1.25,head:'tri'}, data:{color:'--violet-600',dash:[],w:1.25,head:'tri'}, signal:{color:'--amber-600',dash:[7,5],w:1.25,head:'diamond'} };
@@ -61,22 +69,22 @@ function anchor(from,to){
 
 // Single source for an edge's rendered geometry — draw + hit-test share it.
 export function edgePath(e){
-  const a=NODES.find(n=>n.id===e.from), b=NODES.find(n=>n.id===e.to); if(!a||!b) return null;
+  const a=getNode(e.from), b=getNode(e.to); if(!a||!b) return null;
   const A=anchor(a,b), B=anchor(b,a);
   return getRoute(a,b,A.x,A.y,B.x,B.y,A,B);
 }
 
 export function drawEdges(ctx,scale,hover,selected,hovEdge,selEdge){
   const sorted=[...EDGES].sort((a,b)=>{
-    const na=NODES.find(n=>n.id===a.from), nb=NODES.find(n=>n.id===a.to);
-    const ca=NODES.find(n=>n.id===b.from), cb=NODES.find(n=>n.id===b.to);
+    const na=getNode(a.from), nb=getNode(a.to);
+    const ca=getNode(b.from), cb=getNode(b.to);
     if(!na||!nb||!ca||!cb) return 0;
     const da=Math.hypot((nb.x-nb.w)-(na.x+na.w),(nb.y-na.y));
     const db=Math.hypot((cb.x-cb.w)-(ca.x+ca.w),(cb.y-ca.y));
     return db-da;
   });
   sorted.forEach(e=>{
-    const a=NODES.find(n=>n.id===e.from),b=NODES.find(n=>n.id===e.to); if(!a||!b) return;
+    const a=getNode(e.from),b=getNode(e.to); if(!a||!b) return;
     const sel=e===selEdge||(selected&&(e.from===selected.id||e.to===selected.id)), hov=e===hovEdge||(hover&&(e.from===hover.id||e.to===hover.id));
     const r=edgePath(e); if(!r) return; const path=r.path;
     const st=EDGE_STYLES[e.kind]||EDGE_STYLES.call;
@@ -103,7 +111,7 @@ export function drawEdges(ctx,scale,hover,selected,hovEdge,selEdge){
       const tailAng=Math.atan2(path[0].y-path[1].y, path[0].x-path[1].x);
       ctx.save(); ctx.globalAlpha=1; ctx.translate(path[0].x,path[0].y); ctx.rotate(tailAng); drawHead(ctx,st.head,scale,strokeCol); ctx.restore();
     }
-    const srcKind=NODES.find(n=>n.id===e.from)?.kind; const dotCol=kindColor(srcKind||'game');
+    const srcKind=getNode(e.from)?.kind; const dotCol=kindColor(srcKind||'game');
     ctx.save(); ctx.globalAlpha=isDim? .24 : sel||hov ? 1 : .88;
     ctx.beginPath(); ctx.arc(path[0].x,path[0].y,3.8/scale,0,Math.PI*2); ctx.fillStyle=sel?token('--stone-900'):hov?token('--stone-700'):dotCol; ctx.fill(); ctx.strokeStyle=token('--color-card'); ctx.lineWidth=1.7/scale; ctx.stroke();
     if(!sel){ ctx.beginPath(); ctx.arc(path[0].x,path[0].y,1.35/scale,0,Math.PI*2); ctx.fillStyle=token('--color-card'); ctx.globalAlpha=.96; ctx.fill(); }

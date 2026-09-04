@@ -4,7 +4,23 @@ import { renderStatStrip } from './illustrations/statStrip.js';
 import { play, unlock } from './audio/audioManager.js';
 import { celebrate, hideCelebration } from './celebrate.js';
 
-let scoreEl, statusEl, btn, replayBtn, clickTimer = null;
+let scoreEl, statusEl, btn, replayBtn, clickTimer = null, tickId = null;
+let _particleStyle = null;
+function getParticleStyle(){
+  if(_particleStyle) return _particleStyle;
+  const s = getComputedStyle(document.documentElement);
+  _particleStyle = {
+    fs: s.getPropertyValue('--text-title').trim() || '1.4rem',
+    fw: s.getPropertyValue('--font-weight-extrabold').trim() || '800',
+    zi: s.getPropertyValue('--z-particle').trim() || '1000',
+  };
+  return _particleStyle;
+}
+function ensureTick(){
+  const need = state.autoClickers > 0 && !state.completed;
+  if(need && !tickId) tickId = setInterval(tick, 1000);
+  else if(!need && tickId){ clearInterval(tickId); tickId = null; }
+}
 
 export function initGame() {
   scoreEl = document.getElementById('score-value');
@@ -15,7 +31,7 @@ export function initGame() {
   if (replayBtn) replayBtn.onclick = handleReplay;
   document.addEventListener('score:changed', updateUI);
   document.addEventListener('goal:reached', onGoalReached);
-  setInterval(tick, 1000);
+  ensureTick();
   renderStatStrip();
   updateUI();
 }
@@ -24,6 +40,7 @@ function updateUI() {
   if (scoreEl) scoreEl.textContent = Math.floor(state.score).toLocaleString();
   renderStatStrip();
   refreshShop();
+  ensureTick();
 }
 
 function handleClick() {
@@ -44,6 +61,7 @@ function handleClick() {
 
 function onGoalReached() {
   unlock();
+  ensureTick();
   celebrate({ scoreEl, statusEl, btn, replayBtn });
 }
 
@@ -55,6 +73,7 @@ function handleReplay() {
   if (replayBtn) replayBtn.hidden = true;
   if (statusEl) statusEl.textContent = 'Tap the button to begin!';
   updateUI();
+  ensureTick();
 }
 
 function tick() {
@@ -66,18 +85,9 @@ function spawnParticle(text, color, scale) {
   const el = document.createElement('div');
   el.className = 'float-particle';
   el.textContent = text;
-  const fs = getComputedStyle(document.documentElement).getPropertyValue('--text-title').trim() || '1.4rem';
-  const fw = getComputedStyle(document.documentElement).getPropertyValue('--font-weight-extrabold').trim() || '800';
-  const zi = getComputedStyle(document.documentElement).getPropertyValue('--z-particle').trim() || '1000';
+  const { fs, fw, zi } = getParticleStyle();
   el.style.cssText = `position:fixed;left:50%;top:40%;font-size:${fs};color:${color};pointer-events:none;z-index:${zi};font-weight:${fw};opacity:0;transform:translate(-50%,-50%) scale(${scale || 1})`;
   document.body.appendChild(el);
   requestAnimationFrame(() => { el.className = 'float-particle burst'; });
   setTimeout(() => el.remove(), 800);
-}
-
-function spawnConfettiBurst() {
-  const colors = ['var(--blue-600)', 'var(--amber-600)', 'var(--emerald-600)', 'var(--rose-600)', 'var(--color-accent-soft)'];
-  for (let i = 0; i < 18; i++) {
-    setTimeout(() => spawnParticle('✦', colors[i % colors.length], 1.6), i * 32);
-  }
 }

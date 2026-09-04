@@ -73,6 +73,7 @@ export function celebrate({ scoreEl, statusEl, btn, replayBtn } = {}) {
 
 function burstStars(x, y) {
   const colors = ['var(--amber-400)', 'var(--amber-700)', 'var(--rose-500)', 'var(--violet-600)'];
+  const items = [];
   for (let i = 0; i < 8; i++) {
     const el = document.createElement('div');
     el.textContent = '✦';
@@ -82,16 +83,26 @@ function burstStars(x, y) {
     document.body.appendChild(el);
     const ang = (Math.PI * 2 * i) / 8 + (Math.random() - .5) * .25;
     const dist = 60 + Math.random() * 70;
-    const dx = Math.cos(ang) * dist, dy = Math.sin(ang) * dist - 18;
-    const dur = 560 + Math.random() * 200;
-    const t0 = performance.now();
-    const step = (now) => {
-      const p = Math.min(1, (now - t0) / dur);
-      const eased = 1 - Math.pow(1 - p, 3);
-      el.style.transform = `translate3d(${dx * eased}px,${dy * eased}px,0) rotate(${p * 140}deg)`;
-      el.style.opacity = String(1 - p);
-      if (p < 1) requestAnimationFrame(step); else el.remove();
-    };
-    requestAnimationFrame(step);
+    items.push({
+      el,
+      dx: Math.cos(ang) * dist,
+      dy: Math.sin(ang) * dist - 18,
+      dur: 560 + Math.random() * 200,
+      t0: performance.now(),
+    });
   }
+  // Single rAF (was 8)
+  const tick = (now) => {
+    let alive = 0;
+    for(const it of items){
+      if(!it.el.parentNode) continue;
+      const p = Math.min(1, (now - it.t0) / it.dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      it.el.style.transform = `translate3d(${it.dx * eased}px,${it.dy * eased}px,0) rotate(${p * 140}deg)`;
+      it.el.style.opacity = String(1 - p);
+      if(p < 1) alive++; else it.el.remove();
+    }
+    if(alive>0) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }

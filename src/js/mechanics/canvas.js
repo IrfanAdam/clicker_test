@@ -35,9 +35,12 @@ export function createMechanicsCanvas(canvas, tooltip){
     list.forEach((n,i)=>{ n.y=g.y+HH+PY+i*(RH+RG); n.x=g.x+PX; });
     clearRouteCache();
   }
+  let pending=false;
   function draw(){
-    if(anim) cancelAnimationFrame(anim);
+    if(pending) return;
+    pending=true;
     anim=requestAnimationFrame(()=>{
+      pending=false;
       ctx.clearRect(0,0,W,H); ctx.fillStyle=token('--stone-100'); ctx.fillRect(0,0,W,H);
       ctx.save(); ctx.translate(ox,oy); ctx.scale(scale,scale);
       drawGroups(ctx,scale,hoverGroup,selected); drawGrid(ctx,ox,oy,scale,W,H);

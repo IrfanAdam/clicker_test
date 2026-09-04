@@ -1,15 +1,23 @@
 /**
  * Smooth confetti — lightweight, 60fps GPU-only.
- * Optimized: fewer particles, cached styles, cheaper physics.
+ * Optimized: fewer particles, cached styles, single rAF.
  * @param {number} x - origin X
  * @param {number} y - origin Y
  */
+let _confettiZi = null;
+function getConfettiZi(){
+  if(_confettiZi) return _confettiZi;
+  _confettiZi = getComputedStyle(document.documentElement).getPropertyValue('--z-confetti').trim() || '9999';
+  return _confettiZi;
+}
+
 export function spawnConfetti(x, y) {
   const colors = ['var(--blue-600)','var(--amber-700)','var(--emerald-600)','var(--rose-500)','var(--violet-600)'];
   const count = 20;
-  const zi = getComputedStyle(document.documentElement).getPropertyValue('--z-confetti').trim() || '9999';
+  const zi = getConfettiZi();
   const frag = document.createDocumentFragment();
   const items = [];
+  const ih = window.innerHeight;
   for (let i = 0; i < count; i++) {
     const el = document.createElement('div');
     const shape = Math.random();
@@ -37,50 +45,22 @@ export function spawnConfetti(x, y) {
     });
   }
   document.body.appendChild(frag);
-  for (const it of items) {
-    const step = (now) => {
+  // Single rAF loop (was 20) — less scheduler pressure
+  let alive = items.length;
+  const tick = (now) => {
+    alive = 0;
+    for(const it of items){
+      if(!it.el.parentNode) continue;
       const dt = Math.min(32, now - it.t0) / 16.6;
       it.vx *= it.drag; it.vy += it.grav * dt;
       it.cx += it.vx * dt * .6; it.cy += it.vy * dt * .6; it.rx += it.rv * dt * .6;
       const p = (now - it.t0) / it.dur; it.op = .95 * (1 - p);
       it.el.style.transform = `translate3d(${it.cx}px,${it.cy}px,0) rotate(${it.rx}deg) scale(${it.scl})`;
       it.el.style.opacity = String(Math.max(0, it.op));
-      if (p < 1 && it.op > .02 && it.cy < window.innerHeight + 60) requestAnimationFrame(step);
+      if (p < 1 && it.op > .02 && it.cy < ih + 60) alive++;
       else it.el.remove();
-    };
-    requestAnimationFrame(step);
-  }
-}
-
-/**
- * Creates a floating text particle (e.g., "+1") that drifts upward.
- * @param {number} x - Screen X
- * @param {number} y - Screen Y
- * @param {string} text - Text to display
- */
-export function createParticle(x, y, text) {
-  const p = document.createElement('div');
-  p.className = 'click-particle';
-  p.textContent = text;
-  const fs = getComputedStyle(document.documentElement).getPropertyValue('--text-heading').trim() || '1.5rem';
-  const fw = getComputedStyle(document.documentElement).getPropertyValue('--font-weight-bold').trim() || '700';
-  const zi = getComputedStyle(document.documentElement).getPropertyValue('--z-particle').trim() || '9999';
-  const dur = getComputedStyle(document.documentElement).getPropertyValue('--duration-slow').trim() || '.8s';
-  Object.assign(p.style, {
-    position: 'fixed',
-    left: `${x}px`,
-    top: `${y}px`,
-    fontSize: fs,
-    fontWeight: fw,
-    color: 'var(--color-primary)',
-    pointerEvents: 'none',
-    zIndex: zi,
-    transition: `transform ${dur} var(--ease-out),opacity ${dur} var(--ease-out)`,
-  });
-  document.body.appendChild(p);
-  requestAnimationFrame(() => {
-    p.style.transform = 'translateY(calc((var(--space-24) + var(--space-1)) * -1))';
-    p.style.opacity = '0';
-  });
-  setTimeout(() => p.remove(), 800);
+    }
+    if(alive>0) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }

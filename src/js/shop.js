@@ -6,6 +6,7 @@ import { play, unlock } from './audio/audioManager.js';
 import { centerPurchasable, setupMobileSwap } from './shopMobile.js';
 
 let container = null;
+let itemEls = null;
 
 export function initShop() {
   container = document.getElementById('shop-items');
@@ -18,15 +19,15 @@ export function initShop() {
     el.querySelector('.buy-button').onclick = () => handleBuy(idx);
     container.appendChild(el);
   });
+  itemEls = [...container.querySelectorAll('.shop-item')];
   refreshShop();
   setupMobileSwap(container);
 }
 
 export function refreshShop() {
-  if (!container) return;
+  if (!container || !itemEls) return;
   if (state.completed) {
-    const els = container.querySelectorAll('.shop-item');
-    els.forEach((el) => {
+    itemEls.forEach((el) => {
       el.classList.add('disabled');
       el.querySelector('.buy-button')?.classList.add('disabled');
       const c = el.querySelector('.shop-item-cost');
@@ -35,9 +36,8 @@ export function refreshShop() {
     centerPurchasable(container);
     return;
   }
-  const els = container.querySelectorAll('.shop-item');
   SHOP_ITEMS.forEach((item, i) => {
-    const el = els[i]; if (!el) return;
+    const el = itemEls[i]; if (!el) return;
     const owned = !!state.ownedCounts[item.id];
     if (owned) {
       el.classList.add('disabled');
@@ -64,6 +64,6 @@ function handleBuy(idx) {
   state.ownedCounts[item.id] = (state.ownedCounts[item.id] || 0) + 1;
   document.dispatchEvent(new CustomEvent('score:changed'));
   play('buy');
-  const btn = container.querySelectorAll('.buy-button')[idx];
+  const btn = itemEls[idx]?.querySelector('.buy-button');
   if (btn) { const r = btn.getBoundingClientRect(); spawnConfetti(r.left + r.width / 2, r.top + r.height / 2); }
 }
