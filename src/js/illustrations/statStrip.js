@@ -1,9 +1,8 @@
 import { icon } from './icons.js';
-import { state } from '../state.js';
+import { state, GOAL } from '../state.js';
 function levelOf(score){ return Math.floor(score/100)+1; }
 function rankOf(score){
-  if(score>=1000) return '#3';
-  if(score>=500) return '#7';
+  if(score>=GOAL) return '#7';
   if(score>=200) return '#12';
   if(score>=50) return '#28';
   return '#47';

@@ -1,7 +1,7 @@
 // Game state — single source
 import { play } from './audio/audioManager.js';
 
-export const GOAL = 500;
+export const GOAL = 350;
 export const MAX_SCORE = GOAL;
 export const state = {
   score: 0,

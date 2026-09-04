@@ -1,5 +1,6 @@
 import { play } from './audio/audioManager.js';
 import { spawnConfetti } from '../utils/confetti.js';
+import { GOAL } from './state.js';
 
 let overlay = null;
 
@@ -12,9 +13,9 @@ function ensureOverlay() {
   overlay.setAttribute('aria-label', 'Goal reached celebration');
   overlay.innerHTML = `
     <div class="celebration-card">
-      <div class="celebration-badge">✦ Goal reached</div>
-      <h2 class="celebration-title"><span>500 / 500</span> — you did it!</h2>
-      <p class="celebration-sub">Studio masterwork complete. Every click, every upgrade — now a finished piece.</p>
+      <div class="celebration-badge">✦ You've tapped enough</div>
+      <h2 class="celebration-title"><span>${GOAL} / ${GOAL}</span> — now go touch grass</h2>
+      <p class="celebration-sub">${GOAL} taps of pure dedication. Your finger's officially tired, your screen's traumatized — take a bow, tap legend.</p>
       <div class="celebration-actions">
         <button type="button" class="celebration-again">Play again</button>
         <button type="button" class="celebration-close">Close</button>
@@ -53,7 +54,7 @@ export function celebrate({ scoreEl, statusEl, btn, replayBtn } = {}) {
     setTimeout(() => gameArea.classList.remove('shake'), 500);
     setTimeout(() => gameArea.classList.remove('is-celebrating'), 1400);
   }
-  if (statusEl) statusEl.textContent = 'Goal achieved! 🎉 — ceremony underway';
+  if (statusEl) statusEl.textContent = 'You’ve tapped enough! 🎉 — now go touch grass';
   // Confetti — two waves only (was 3), lighter count (20 each vs 42)
   const cx = window.innerWidth / 2, cy = window.innerHeight * 0.34;
   const bx = btn?.getBoundingClientRect();

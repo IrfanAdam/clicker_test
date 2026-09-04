@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Clicker Mania</title>
+    <title>Tapmania</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
@@ -20,7 +20,7 @@
   <body>
     <div id="app">
       <header class="app-header">
-        <h1>⚡ Clicker Mania</h1>
+        <h1>👆⚡ Tapmania</h1>
         <nav>
           <ul>
             <li><a href="#" id="mechanics-link">Mechanics</a></li>
@@ -32,15 +32,15 @@
       <main class="game-layout">
         <section class="game-area" id="action-zone">
           <div class="stat-strip" id="stat-strip"></div>
-          <div class="progress-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="500" aria-valuenow="0" aria-label="Progress to goal">
+          <div class="progress-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="350" aria-valuenow="0" aria-label="Progress to goal">
             <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
-            <div class="progress-meta"><span id="progress-pct">0%</span><span id="progress-goal">0 / 500</span></div>
+            <div class="progress-meta"><span id="progress-pct">0%</span><span id="progress-goal">0 / 350</span></div>
           </div>
           <div id="score-area">
             <h2 id="score-label">Score: <span id="score-value">0</span></h2>
-            <p id="status-text">Click the button to begin!</p>
+            <p id="status-text">Tap the button to begin!</p>
           </div>
-          <button id="click-button">Click me</button>
+          <button id="click-button">Tap me</button>
           <button id="replay-button" hidden type="button" class="replay-button">Replay</button>
           <div id="particle-container"></div>
         </section>
@@ -58,7 +58,7 @@
 
       <div id="shop-backdrop" class="shop-backdrop" hidden></div>
       <footer class="app-footer">
-        <p>&copy; <span id="copyright-year">2024</span> — Clicker Mania · Built with Vite</p>
+        <p>&copy; <span id="copyright-year">2024</span> — Tapmania · Built with Vite</p>
       </footer>
     </div>
     <div id="mechanics-view" class="mechanics-view" hidden>
@@ -106,8 +106,8 @@
         </div>
       </div>
       <div class="mechanics-footer">
-        <span><strong>Flow:</strong> init → initGame/initShop → click / tick → addScore → score:changed → updateUI → refreshShop + statStrip</span>
-        <span><kbd>Esc</kbd> to go back · click a node to pin its wiring</span>
+        <span><strong>Flow:</strong> init → initGame/initShop → tap / tick → addScore → score:changed → updateUI → refreshShop + statStrip</span>
+        <span><kbd>Esc</kbd> to go back · tap a node to pin its wiring</span>
       </div>
     </div>
     <script type="module" src="./src/main.js"></script>

@@ -38,8 +38,8 @@ function handleClick() {
   else updateUI();
   const colors = ['var(--blue-600)', 'var(--amber-700)', 'var(--emerald-700)', 'var(--rose-700)', 'var(--violet-700)', 'var(--cyan-600)', 'var(--orange-900)', 'var(--orange-700)'];
   const color = colors[Math.floor(Math.random() * colors.length)];
-  spawnParticle(`+${power}`, color, state.score < 500 ? 1 : 1.3);
-  setTimeout(() => { if (statusEl && !state.completed) statusEl.textContent = 'Ready to click?'; }, 600);
+  spawnParticle(`+${power}`, color, state.score < GOAL ? 1 : 1.3);
+  setTimeout(() => { if (statusEl && !state.completed) statusEl.textContent = 'Keep tapping!'; }, 600);
 }
 
 function onGoalReached() {
@@ -53,7 +53,7 @@ function handleReplay() {
   if (scoreEl) scoreEl.classList.remove('is-goal');
   if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.pointerEvents = ''; }
   if (replayBtn) replayBtn.hidden = true;
-  if (statusEl) statusEl.textContent = 'Click the button to begin!';
+  if (statusEl) statusEl.textContent = 'Tap the button to begin!';
   updateUI();
 }
 
